@@ -14,6 +14,7 @@ public:
     ~Program();
     void append(const string &text);
     void load(const string &filename);
+    void save(const string &filename);
     void clear();
 };
 
