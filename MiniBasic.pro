@@ -21,6 +21,7 @@ SOURCES += \
 
 HEADERS += \
     buffer.h \
+    errorhandler.h \
     evalstate.h \
     exp.h \
     mainwindow.h \

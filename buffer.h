@@ -32,6 +32,7 @@ public:
     ~Buffer();
 
     void writeToFile(const string &filename) const;
+    void readFromFile(const string &filename);
 
     const string &moveToLine(int idx) const;
 

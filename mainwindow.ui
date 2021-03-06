@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>852</width>
-    <height>832</height>
+    <height>842</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,13 +19,13 @@
   <property name="minimumSize">
    <size>
     <width>852</width>
-    <height>832</height>
+    <height>842</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>852</width>
-    <height>832</height>
+    <height>842</height>
    </size>
   </property>
   <property name="font">
@@ -139,7 +139,7 @@
       <x>20</x>
       <y>650</y>
       <width>811</width>
-      <height>61</height>
+      <height>75</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="buttons_layout">
@@ -148,7 +148,7 @@
        <property name="font">
         <font>
          <family>Cascadia Code PL</family>
-         <pointsize>15</pointsize>
+         <pointsize>14</pointsize>
          <weight>50</weight>
          <italic>false</italic>
          <bold>false</bold>
@@ -156,6 +156,9 @@
        </property>
        <property name="cursor">
         <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="statusTip">
+        <string>In fact, I recommend you edit your program in notebook first.</string>
        </property>
        <property name="text">
         <string>Load</string>
@@ -167,7 +170,7 @@
        <property name="font">
         <font>
          <family>Cascadia Code PL</family>
-         <pointsize>15</pointsize>
+         <pointsize>14</pointsize>
          <weight>50</weight>
          <italic>false</italic>
          <bold>false</bold>
@@ -175,6 +178,9 @@
        </property>
        <property name="cursor">
         <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="statusTip">
+        <string>In fact, I recommend you edit your program in notebook first.</string>
        </property>
        <property name="text">
         <string>Run</string>
@@ -186,7 +192,7 @@
        <property name="font">
         <font>
          <family>Cascadia Code PL</family>
-         <pointsize>15</pointsize>
+         <pointsize>14</pointsize>
          <weight>50</weight>
          <italic>false</italic>
          <bold>false</bold>
@@ -195,10 +201,77 @@
        <property name="cursor">
         <cursorShape>PointingHandCursor</cursorShape>
        </property>
+       <property name="statusTip">
+        <string>In fact, I recommend you edit your program in notebook first.</string>
+       </property>
        <property name="text">
         <string>Clear</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="del_Layout">
+       <property name="spacing">
+        <number>1</number>
+       </property>
+       <property name="sizeConstraint">
+        <enum>QLayout::SetFixedSize</enum>
+       </property>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>from:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="del_from"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>to:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="del_to"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="delete_button">
+         <property name="font">
+          <font>
+           <family>Cascadia Code PL</family>
+           <pointsize>13</pointsize>
+           <weight>50</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="statusTip">
+          <string>In fact, I recommend you edit your program in notebook first.</string>
+         </property>
+         <property name="text">
+          <string>Delete</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
@@ -239,11 +312,17 @@
          <bold>false</bold>
         </font>
        </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
        <property name="inputMask">
         <string notr="true"/>
        </property>
        <property name="text">
         <string notr="true"/>
+       </property>
+       <property name="clearButtonEnabled">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -259,7 +338,13 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="statusTip">
+    <string>In fact, I recommend you edit your program in notebook first.</string>
+   </property>
    <widget class="QMenu" name="menuFile">
+    <property name="statusTip">
+     <string>In fact, I recommend you edit your program in notebook first.</string>
+    </property>
     <property name="title">
      <string>File</string>
     </property>
@@ -268,14 +353,34 @@
    </widget>
    <addaction name="menuFile"/>
   </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="mouseTracking">
+    <bool>false</bool>
+   </property>
+   <property name="tabletTracking">
+    <bool>false</bool>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
+   <property name="statusTip">
+    <string>In fact, I recommend you edit your program in notebook first.</string>
+   </property>
+  </widget>
   <action name="action_save">
    <property name="text">
     <string>Save to File</string>
+   </property>
+   <property name="statusTip">
+    <string>In fact, I recommend you edit your program in notebook first.</string>
    </property>
   </action>
   <action name="action_load">
    <property name="text">
     <string>Load from File</string>
+   </property>
+   <property name="statusTip">
+    <string>In fact, I recommend you edit your program in notebook first.</string>
    </property>
   </action>
  </widget>

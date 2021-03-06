@@ -86,6 +86,16 @@ void Buffer::writeToFile(const string &filename) const {
     this_file.close();
 }
 
+void Buffer::readFromFile(const string &filename) { /* clear the buffer before call this function */
+    std::fstream this_file;
+    this_file.open(filename, std::ios::in);
+    std::string text;
+    while (std::getline(this_file, text)) {
+        appendLine(text);
+    }
+    this_file.close();
+}
+
 void Buffer::showLines(int from, int to) const {
     for(int i = from; i <= to; i++) {
         std::cout << i << "\t";

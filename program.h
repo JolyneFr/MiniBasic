@@ -15,7 +15,9 @@ public:
     void append(const string &text);
     void load(const string &filename);
     void save(const string &filename);
+    void remove(int start, int end);
     void clear();
+    int length();
 };
 
 #endif // PROGRAM_H

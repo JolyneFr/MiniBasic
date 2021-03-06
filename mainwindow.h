@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFileDialog>
+#include <fstream>
 #include "program.h"
 
 QT_BEGIN_NAMESPACE
@@ -20,12 +22,17 @@ private:
     Ui::MainWindow *ui;
     Program *cur_prog;
 
-    void refresh_display();
+    void display_code_from_file(const std::string &filename);
+    void save_file(const std::string &filename);
     void append_code();
+    void sync_code_display();
 
 private slots:
-    void on_click_load();
-    void on_click_run();
-    void on_click_clear();
+    void click_load();
+    void click_run();
+    void click_clear();
+    void click_save_file();
+    void click_load_file();
+    void click_delete();
 };
 #endif // MAINWINDOW_H
