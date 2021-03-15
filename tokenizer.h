@@ -1,21 +1,29 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
-#include <vector>
+#include <QVector>
 #include <string>
-#include <sstream>
+#include <QString>
 
-class Tokenizer {
+enum TokenType { Number, String, Mark };
+enum StringType { REM, LET, PRINT, INPUT, GOTO, IF, END, THEN,
+                RUN, LOAD, LIST, CLEAR, HELP, QUIT, Variable, NONE };
 
-public:
-
-    Tokenizer(std::string str);
-    std::vector<std::string> getTokens();
-
+class Token {
 private:
-
-    std::string cur_str;
-
+    QString tokenString;
+    void resolve();
+    TokenType tType;
+    StringType sType;
+public:
+    Token(QString ts, TokenType tt);
+    TokenType getType();
+    StringType getWordType();
+    int getNumber();
+    QString toString();
+    QString getOp();
 };
+
+QVector<Token> getTokens(std::string str);
 
 #endif // TOKENIZER_H

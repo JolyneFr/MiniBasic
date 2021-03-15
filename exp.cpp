@@ -1,4 +1,5 @@
 #include "exp.h"
+#include <cmath>
 
 Expression::Expression() {}
 
@@ -9,12 +10,12 @@ int Expression::getConstantValue() {
     return 0;
 }
 
-std::string Expression::getIdentifierName() {
+QString Expression::getIdentifierName() {
     error("Calling unimplemented method from wrong class object.");
     return "\0";
 }
 
-std::string Expression::getOperator() {
+QString Expression::getOperator() {
     error("Calling unimplemented method from wrong class object.");
     return "\0";
 }
@@ -35,8 +36,8 @@ int ConstantExp::eval(EvaluationContext & ) {
     return value;
 }
 
-std::string ConstantExp::toString() {
-    return std::to_string(value);
+QString ConstantExp::toString() {
+    return QString::number(value);
 }
 
 ExpressionType ConstantExp::type() {
@@ -47,16 +48,16 @@ int ConstantExp::getConstantValue() {
     return value;
 }
 
-IdentifierExp::IdentifierExp(std::string _name): name(_name) {}
+IdentifierExp::IdentifierExp(QString _name): name(_name) {}
 
 int IdentifierExp::eval(EvaluationContext & context) {
     if (!context.isDefined(name)) {
-        error(name + " is undefined");
+        error(name.toStdString() + " is undefined");
     }
     return context.getValue(name);
 }
 
-std::string IdentifierExp::toString() {
+QString IdentifierExp::toString() {
     return name;
 }
 
@@ -64,11 +65,11 @@ ExpressionType IdentifierExp::type() {
     return IDENTIFIER;
 }
 
-std::string IdentifierExp::getIdentifierName() {
+QString IdentifierExp::getIdentifierName() {
     return name;
 }
 
-CompoundExp::CompoundExp(std::string _op, Expression *_lhs, Expression *_rhs):
+CompoundExp::CompoundExp(QString _op, Expression *_lhs, Expression *_rhs):
     op(_op), lhs(_lhs), rhs(_rhs) {}
 
 CompoundExp::~CompoundExp() {
@@ -90,19 +91,20 @@ int CompoundExp::eval(EvaluationContext & context) {
           if (right == 0) error("Division by 0");
           return left / right;
        }
+       if (op == "**") return pow(left, right);
        error("Illegal operator in expression");
        return 0;
 }
 
-std::string CompoundExp::toString() {
-    return lhs->toString() + op + rhs->toString();
+QString CompoundExp::toString() {
+    return lhs->toString() + " " + op + " " + rhs->toString();
 }
 
 ExpressionType CompoundExp::type() {
     return COMPOUND;
 }
 
-std::string CompoundExp::getOperator() {
+QString CompoundExp::getOperator() {
     return op;
 }
 

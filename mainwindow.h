@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <fstream>
 #include "program.h"
+#include "programrunner.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,14 +22,17 @@ public:
 private:
     Ui::MainWindow *ui;
     Program *cur_prog;
+    ProgramRunner prog_runner;
+    int lineIndex = 1;
 
     void display_code_from_file(const std::string &filename);
     void save_file(const std::string &filename);
     void append_code();
     void sync_code_display();
+    void read_from_begin();
 
 private slots:
-    void click_load();
+    void click_enter();
     void click_run();
     void click_clear();
     void click_save_file();

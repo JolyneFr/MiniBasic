@@ -32,6 +32,11 @@ void Program::remove(int start, int end)
     data_buffer->deleteLines(start ,end);
 }
 
+std::string Program::getStatement(int index)
+{
+    return data_buffer->data_list->access(index)->data;
+}
+
 int Program::length()
 {
     return data_buffer->data_list->current_length;

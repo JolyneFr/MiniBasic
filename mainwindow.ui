@@ -161,7 +161,7 @@
         <string>In fact, I recommend you edit your program in notebook first.</string>
        </property>
        <property name="text">
-        <string>Load</string>
+        <string> Load and Run</string>
        </property>
       </widget>
      </item>
@@ -377,7 +377,7 @@
   </action>
   <action name="action_load">
    <property name="text">
-    <string>Load from File</string>
+    <string>Load &amp; Run File</string>
    </property>
    <property name="statusTip">
     <string>In fact, I recommend you edit your program in notebook first.</string>

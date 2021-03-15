@@ -1,8 +1,8 @@
 #ifndef EVALSTATE_H
 #define EVALSTATE_H
 
-#include <string>
-#include <map>
+#include <QString>
+#include <QMap>
 
 /*
  * Class: EvaluationContext
@@ -15,13 +15,14 @@ class EvaluationContext {
 
 public:
 
-   void setValue(std::string var, int value);
-   int getValue(std::string var);
-   bool isDefined(std::string var);
+   void setValue(QString var, int value);
+   int getValue(QString var);
+   bool isDefined(QString var);
+   void clear();
 
 private:
 
-   std::map<std::string, int> symbolTable;
+   QMap<QString, int> symbolTable;
 
 };
 

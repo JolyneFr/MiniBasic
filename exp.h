@@ -7,7 +7,7 @@
 #ifndef EXP_H
 #define EXP_H
 
-#include <string>
+#include <QString>
 #include <map>
 #include <cstdlib>
 #include "tokenizer.h"
@@ -43,14 +43,14 @@ public:
    Expression();
    virtual ~Expression();
    virtual int eval(EvaluationContext & context) = 0;
-   virtual std::string toString() = 0;
+   virtual QString toString() = 0;
    virtual ExpressionType type() = 0;
 
 /* Getter methods for convenience */
 
    virtual int getConstantValue();
-   virtual std::string getIdentifierName();
-   virtual std::string getOperator();
+   virtual QString getIdentifierName();
+   virtual QString getOperator();
    virtual Expression *getLHS();
    virtual Expression *getRHS();
 
@@ -69,7 +69,7 @@ public:
    ConstantExp(int val);
 
    virtual int eval(EvaluationContext & context);
-   virtual std::string toString();
+   virtual QString toString();
    virtual ExpressionType type();
 
    virtual int getConstantValue();
@@ -90,17 +90,17 @@ class IdentifierExp: public Expression {
 
 public:
 
-   IdentifierExp(std::string name);
+   IdentifierExp(QString name);
 
    virtual int eval(EvaluationContext & context);
-   virtual std::string toString();
+   virtual QString toString();
    virtual ExpressionType type();
 
-   virtual std::string getIdentifierName();
+   virtual QString getIdentifierName();
 
 private:
 
-   std::string name;
+   QString name;
 
 };
 
@@ -114,20 +114,20 @@ class CompoundExp: public Expression {
 
 public:
 
-   CompoundExp(std::string op, Expression *lhs, Expression *rhs);
+   CompoundExp(QString op, Expression *lhs, Expression *rhs);
    virtual ~CompoundExp();
 
    virtual int eval(EvaluationContext & context);
-   virtual std::string toString();
+   virtual QString toString();
    virtual ExpressionType type();
 
-   virtual std::string getOperator();
+   virtual QString getOperator();
    virtual Expression *getLHS();
    virtual Expression *getRHS();
 
 private:
 
-   std::string op;
+   QString op;
    Expression *lhs, *rhs;
 
 };

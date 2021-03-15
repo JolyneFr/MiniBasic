@@ -3,7 +3,7 @@
 
 #include <string>
 
-void error(std::string msg) {
+static void error(std::string msg) {
     throw msg;
 }
 

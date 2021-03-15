@@ -16,6 +16,7 @@ public:
     void load(const string &filename);
     void save(const string &filename);
     void remove(int start, int end);
+    std::string getStatement(int index);
     void clear();
     int length();
 };
