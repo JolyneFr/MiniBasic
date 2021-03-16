@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action_load, &QAction::triggered, this, &MainWindow::click_load_file);
     //connect(ui->delete_button, &QPushButton::clicked, this, &MainWindow::click_delete);
     cur_prog = new Program();
-    prog_runner.setDisplay(ui->code_display, ui->result_display);
+    prog_runner.setDisplay(ui->code_display, ui->result_display, ui->ss_display, ui->error_label);
 }
 
 MainWindow::~MainWindow()
@@ -54,6 +54,8 @@ void MainWindow::click_clear()
 {
     cur_prog->clear();
     ui->code_display->clear();
+    ui->result_display->clear();
+    ui->ss_display->clear();
     prog_runner.clear();
 }
 

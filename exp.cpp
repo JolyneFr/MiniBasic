@@ -1,6 +1,13 @@
 #include "exp.h"
 #include <cmath>
 
+QString SyntaxTree::getPrintStr(int layer) {
+    QString str = QString(layer * 4, ' ') + cur_string + "\n";
+    if (left) str += left->getPrintStr(layer + 1);
+    if (right) str += right->getPrintStr(layer + 1);
+    return str;
+}
+
 Expression::Expression() {}
 
 Expression::~Expression() {}
@@ -30,6 +37,11 @@ Expression* Expression::getRHS() {
     return nullptr;
 }
 
+SyntaxTree *Expression::getSyntaxTree() {
+    error("Calling unimplemented method from wrong class object.");
+    return nullptr;
+}
+
 ConstantExp::ConstantExp(int val): value(val) {}
 
 int ConstantExp::eval(EvaluationContext & ) {
@@ -46,6 +58,10 @@ ExpressionType ConstantExp::type() {
 
 int ConstantExp::getConstantValue() {
     return value;
+}
+
+SyntaxTree *ConstantExp::getSyntaxTree() {
+    return new SyntaxTree(QString::number(value));
 }
 
 IdentifierExp::IdentifierExp(QString _name): name(_name) {}
@@ -67,6 +83,10 @@ ExpressionType IdentifierExp::type() {
 
 QString IdentifierExp::getIdentifierName() {
     return name;
+}
+
+SyntaxTree *IdentifierExp::getSyntaxTree() {
+    return new SyntaxTree(name);
 }
 
 CompoundExp::CompoundExp(QString _op, Expression *_lhs, Expression *_rhs):
@@ -116,3 +136,8 @@ Expression* CompoundExp::getRHS() {
     return rhs;
 }
 
+SyntaxTree *CompoundExp::getSyntaxTree() {
+    SyntaxTree *l = lhs->getSyntaxTree();
+    SyntaxTree *r = rhs->getSyntaxTree();
+    return new SyntaxTree(op, l, r);
+}

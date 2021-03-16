@@ -2,6 +2,16 @@
 #include <QtDebug>
 #include <QInputDialog>
 #include <QStack>
+#include <QQueue>
+
+QString StatementTree::getSyntaxStr(int lineN) {
+    QString printStr = QString::number(lineN) + " " + rootString + "\n";
+    for (int index = 0; index < childN; index++) {
+        SyntaxTree *child = childs[index];
+        printStr += child->getPrintStr(1);
+    }
+    return printStr;
+}
 
 bool isBeginWord(StringType st) {
     if (st < THEN) {
@@ -24,6 +34,11 @@ int Statement::execute(EvaluationContext&) {
     return -1;
 }
 
+StatementTree *Statement::getTree() {
+    error("Calling statement function from base class.");
+    return nullptr;
+}
+
 Expression *Statement::getExp(QVector<Token> tokens) {
     QStack<QString> Operators;
     QStack<Expression*> Operands;
@@ -35,7 +50,7 @@ Expression *Statement::getExp(QVector<Token> tokens) {
             Operands.push(new IdentifierExp(cur_token->toString()));
         } else { //cur_token->getType() == Mark
             QString cur_mark = cur_token->getOp();
-            if (cur_mark == "(") {
+            if (cur_mark == "(" || cur_mark == "**") {
                 Operators.push(cur_mark);
             } else if (cur_mark != ")") {
                 while (!Operators.empty() && getPre(cur_mark) <= getPre(Operators.top())) {
@@ -81,11 +96,12 @@ bool Statement::isJudge(QString mark) {
 }
 
 RemStatement::RemStatement(QVector<Token> rems) {
+    getTokens = rems;
     QString rem_text = "";
-    for (Token cur_token : rems) {
-        remText += cur_token.toString() + " ";
+    for (Token cur_token : getTokens) {
+        rem_text += cur_token.toString() + " ";
     }
-    remText = rem_text.trimmed();
+    text = rem_text.trimmed();
 }
 
 StatementType RemStatement::getType() { return RemStmt; }
@@ -93,10 +109,16 @@ StatementType RemStatement::getType() { return RemStmt; }
 int RemStatement::execute(EvaluationContext&) { return 0; }
 
 QString RemStatement::toString() {
-    return "REM " + remText;
+    return "REM " + text;
+}
+
+StatementTree *RemStatement::getTree() {
+    SyntaxTree *rem = new SyntaxTree(text);
+    return new StatementTree("REM", &rem, 1);
 }
 
 LetStatement::LetStatement(QVector<Token> tks) {
+    getTokens = tks;
     variableName = tks[0].toString();
     tks.pop_front();
     tks.pop_front();
@@ -113,10 +135,22 @@ int LetStatement::execute(EvaluationContext &programContext) {
 }
 
 QString LetStatement::toString() {
-    return "LET " + variableName + " = " + rightExp->toString();
+    QString _text = "LET ";
+    for (Token cur_token : getTokens) {
+        _text += cur_token.toString() + " ";
+    }
+    return _text.trimmed();
+}
+
+StatementTree *LetStatement::getTree() {
+    SyntaxTree **childs = new SyntaxTree*[2];
+    childs[0] = new SyntaxTree(variableName); //left;
+    childs[1] = rightExp->getSyntaxTree(); //right
+    return new StatementTree("LET =", childs, 2);
 }
 
 PrintStatement::PrintStatement(QVector<Token> tks, QTextBrowser* rd): res_display(rd) {
+    getTokens = tks;
     printExp = getExp(tks);
 }
 
@@ -130,7 +164,16 @@ int PrintStatement::execute(EvaluationContext &programContext) {
 }
 
 QString PrintStatement::toString() {
-    return "PRINT " + printExp->toString();
+    QString _text = "PRINT ";
+    for (Token cur_token : getTokens) {
+        _text += cur_token.toString() + " ";
+    }
+    return _text.trimmed();
+}
+
+StatementTree *PrintStatement::getTree() {
+    SyntaxTree *t = printExp->getSyntaxTree();
+    return new StatementTree("PRINT", &t, 1);
 }
 
 InputStatement::InputStatement(QVector<Token> tks) {
@@ -154,6 +197,11 @@ QString InputStatement::toString() {
     return "INPUT " + variableName;
 }
 
+StatementTree *InputStatement::getTree() {
+    SyntaxTree *t = new SyntaxTree(variableName);
+    return new StatementTree("INPUT", &t, 1);
+}
+
 GotoStatement::GotoStatement(QVector<Token> tks) {
     if (tks.size() != 1 || tks[0].getType() != Number)
         error("Target line should be a constant.");
@@ -170,7 +218,13 @@ QString GotoStatement::toString() {
     return "GOTO " + QString::number(gotoLineNum);
 }
 
+StatementTree *GotoStatement::getTree() {
+    SyntaxTree *t = new SyntaxTree(QString::number(gotoLineNum));
+    return new StatementTree("GOTO", &t, 1);
+}
+
 IfStatement::IfStatement(QVector<Token> tokens) {
+    getTokens = tokens;
     QVector<Token>::Iterator find_itr1 = tokens.begin();
     while (find_itr1 != tokens.end() && !isJudge(find_itr1->toString())) {
         find_itr1++;
@@ -207,14 +261,30 @@ int IfStatement::execute(EvaluationContext &programContext) {
 }
 
 QString IfStatement::toString() {
-    return "IF " + exp1->toString() + " " + op + " " +
-            exp2->toString() + " THEN " + QString::number(targetN);
+    QString _text = "IF ";
+    for (Token cur_token : getTokens) {
+        _text += cur_token.toString() + " ";
+    }
+    return _text.trimmed();;
+}
+
+StatementTree *IfStatement::getTree() {
+    SyntaxTree **childs = new SyntaxTree*[4];
+    childs[0] = exp1->getSyntaxTree();
+    childs[1] = new SyntaxTree(op);
+    childs[2] = exp2->getSyntaxTree();
+    childs[3] = new SyntaxTree(QString::number(targetN));
+    return new StatementTree("IF THEN", childs, 4);
 }
 
 EndStatement::EndStatement() {}
 
 StatementType EndStatement::getType() { return EndStmt; }
 
-int EndStatement::execute(EvaluationContext &) { return -1; }
+int EndStatement::execute(EvaluationContext &) { return -2; }
 
 QString EndStatement::toString() { return "END"; }
+
+StatementTree *EndStatement::getTree() {
+    return new StatementTree("END", nullptr, 0);
+}

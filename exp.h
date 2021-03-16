@@ -18,6 +18,21 @@
 
 class EvaluationContext;
 
+class SyntaxTree {
+public:
+    QString cur_string;
+    SyntaxTree *left;
+    SyntaxTree *right;
+
+    SyntaxTree(QString s, SyntaxTree *l = nullptr, SyntaxTree *r = nullptr) {
+        cur_string = s;
+        left = l;
+        right = r;
+    }
+
+    QString getPrintStr(int layer);
+};
+
 /*
  * Type: ExpressionType
  * --------------------
@@ -53,6 +68,7 @@ public:
    virtual QString getOperator();
    virtual Expression *getLHS();
    virtual Expression *getRHS();
+   virtual SyntaxTree *getSyntaxTree();
 
 };
 
@@ -73,6 +89,7 @@ public:
    virtual ExpressionType type();
 
    virtual int getConstantValue();
+   virtual SyntaxTree *getSyntaxTree();
 
 private:
 
@@ -97,6 +114,7 @@ public:
    virtual ExpressionType type();
 
    virtual QString getIdentifierName();
+   virtual SyntaxTree *getSyntaxTree();
 
 private:
 
@@ -124,6 +142,7 @@ public:
    virtual QString getOperator();
    virtual Expression *getLHS();
    virtual Expression *getRHS();
+   virtual SyntaxTree *getSyntaxTree();
 
 private:
 

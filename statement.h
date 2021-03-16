@@ -3,6 +3,19 @@
 
 #include "exp.h"
 #include <QTextBrowser>
+#include <QLabel>
+
+class StatementTree {
+public:
+    QString rootString;
+    SyntaxTree **childs;
+    int childN;
+
+    StatementTree(QString rs, SyntaxTree **cs, int n):
+        rootString(rs), childs(cs), childN(n) {}
+
+    QString getSyntaxStr(int lineN);
+};
 
 /*
  * Type: StatementType
@@ -29,10 +42,13 @@ public:
     virtual StatementType getType() = 0;
     virtual int execute(EvaluationContext &programContext) = 0; // -1: error, 0: normal, n: jump to n;
     virtual QString toString() = 0;
+    virtual StatementTree *getTree() = 0;
 protected:
+    QVector<Token> getTokens;
     Expression *getExp(QVector<Token> tokens);
     int getPre(QString mark);
     bool isJudge(QString mark);
+
 };
 
 class RemStatement: public Statement {
@@ -41,8 +57,9 @@ public:
     virtual StatementType getType();
     virtual int execute(EvaluationContext &programContext);
     virtual QString toString();
+    virtual StatementTree *getTree();
 private:
-    QString remText;
+    QString text;
 };
 
 class LetStatement: public Statement {
@@ -55,6 +72,7 @@ public:
     virtual StatementType getType();
     virtual int execute(EvaluationContext &programContext);
     virtual QString toString();
+    virtual StatementTree *getTree();
 };
 
 class PrintStatement: public Statement {
@@ -67,6 +85,7 @@ public:
     virtual StatementType getType();
     virtual int execute(EvaluationContext &programContext);
     virtual QString toString();
+    virtual StatementTree *getTree();
 };
 
 class InputStatement: public Statement {
@@ -77,6 +96,7 @@ public:
     virtual StatementType getType();
     virtual int execute(EvaluationContext &programContext);
     virtual QString toString();
+    virtual StatementTree *getTree();
 };
 
 class GotoStatement: public Statement {
@@ -87,6 +107,7 @@ public:
     virtual StatementType getType();
     virtual int execute(EvaluationContext &progCont);
     virtual QString toString();
+    virtual StatementTree *getTree();
 };
 
 class IfStatement: public Statement {
@@ -100,6 +121,7 @@ public:
     virtual StatementType getType();
     virtual int execute(EvaluationContext &progCont);
     virtual QString toString();
+    virtual StatementTree *getTree();
 };
 
 class EndStatement: public Statement {
@@ -108,6 +130,7 @@ public:
     virtual StatementType getType();
     virtual int execute(EvaluationContext &progCont);
     virtual QString toString();
+    virtual StatementTree *getTree();
 };
 
 #endif // STATEMENT_H

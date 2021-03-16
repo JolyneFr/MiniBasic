@@ -11,9 +11,11 @@ ProgramRunner::~ProgramRunner() {
     programContainer->~QMap();
 }
 
-void ProgramRunner::setDisplay(QTextBrowser *cd, QTextBrowser *rd) {
+void ProgramRunner::setDisplay(QTextBrowser *cd, QTextBrowser *rd, QTextBrowser *sd, QLabel *ed) {
     code_display = cd;
     res_display = rd;
+    syntax_display = sd;
+    error_display = ed;
 }
 
 void ProgramRunner::execute_directly(Statement* stmt) {
@@ -31,6 +33,7 @@ void ProgramRunner::clear() {
 }
 
 void ProgramRunner::readStatement(QVector<Token> tokens) {
+    try {
     if (tokens[0].getType() == String) { //execute directly
         StringType cur_t = tokens[0].getWordType();
         tokens.pop_front();
@@ -60,9 +63,19 @@ void ProgramRunner::readStatement(QVector<Token> tokens) {
     } else if (tokens[0].getType() == Number) { //normal statement
         int lineNumber = tokens[0].getNumber();
         tokens.pop_front();
-        Statement *curStmt = parse(tokens);
-        programContainer->insert(lineNumber, curStmt);
+        if (tokens.empty()) {
+            programContainer->remove(lineNumber);
+        } else {
+            Statement *curStmt = parse(tokens);
+            (*programContainer)[lineNumber] = curStmt;
+            StatementTree *curTree = curStmt->getTree();
+            syntax_display->insertPlainText(curTree->getSyntaxStr(lineNumber));
+        }
         sync_display();
+    }
+    } catch (std::string msg) {
+        error_display->setText("ERROR: " + QString::fromStdString(msg));
+        return;
     }
 }
 
@@ -71,9 +84,16 @@ void ProgramRunner::run_codes() {
     while (cur_code != programContainer->end()) {
         int status = cur_code.value()->execute(programContext);
         switch (status) {
-            case -1: qDebug() << "Runtime Error!"; return;
+            case -2: return;
+            case -1: error("Program Ends."); return;
             case 0:  cur_code++;break;
-            default: cur_code = programContainer->find(status);
+            default: {
+                cur_code = programContainer->find(status);
+                if (cur_code == programContainer->end()) {
+                    error("LineNumber doesn't exist.");
+                    return;
+                }
+            }
         }
     }
 }
@@ -83,21 +103,28 @@ Statement *ProgramRunner::parse(QVector<Token> tokens) {
     tokens.pop_front();
     Statement *curStmt;
     switch (curWordType) {
-    case REM: {
-        curStmt = new RemStatement(tokens); break;
-    }
-    case LET: {
-        curStmt = new LetStatement(tokens); break;
-    }
-    case PRINT: {
-        curStmt = new PrintStatement(tokens, res_display); break;
-    }
-    case INPUT: {
-        curStmt = new InputStatement(tokens); break;
-    }
-    case IF: {
-        curStmt = new IfStatement(tokens); break;
-    }
+        case REM: {
+            curStmt = new RemStatement(tokens); break;
+        }
+        case LET: {
+            curStmt = new LetStatement(tokens); break;
+        }
+        case PRINT: {
+            curStmt = new PrintStatement(tokens, res_display); break;
+        }
+        case INPUT: {
+            curStmt = new InputStatement(tokens); break;
+        }
+        case GOTO: {
+            curStmt = new GotoStatement(tokens); break;
+        }
+        case IF: {
+            curStmt = new IfStatement(tokens); break;
+        }
+        case END: {
+            curStmt = new EndStatement(); break;
+        }
+        default: curStmt = nullptr;
     }
     return curStmt;
 }

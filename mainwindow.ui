@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>852</width>
-    <height>842</height>
+    <height>882</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,13 +19,13 @@
   <property name="minimumSize">
    <size>
     <width>852</width>
-    <height>842</height>
+    <height>882</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>852</width>
-    <height>842</height>
+    <height>882</height>
    </size>
   </property>
   <property name="font">
@@ -254,6 +254,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="delete_button">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="font">
           <font>
            <family>Cascadia Code PL</family>
@@ -327,6 +330,28 @@
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QLabel" name="error_label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>790</y>
+      <width>811</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 255, 255);
+font: 87 9pt &quot;Arial&quot;;
+border-color: rgb(170, 0, 0);
+color: rgb(170, 0, 0);</string>
+    </property>
+    <property name="text">
+     <string>No Error Detected So Far.</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

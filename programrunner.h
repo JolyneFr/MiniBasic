@@ -11,6 +11,8 @@ private:
     void execute_directly(Statement*);
     QTextBrowser* code_display;
     QTextBrowser* res_display;
+    QTextBrowser* syntax_display;
+    QLabel* error_display;
 
     Statement *parse(QVector<Token> tokens);
     void sync_display();
@@ -20,7 +22,7 @@ public:
     ProgramRunner();
     ~ProgramRunner();
     void clear();
-    void setDisplay(QTextBrowser* code_display, QTextBrowser* res_display);
+    void setDisplay(QTextBrowser*, QTextBrowser*, QTextBrowser*, QLabel*);
     void readStatement(QVector<Token> tokens);
 };
 
