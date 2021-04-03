@@ -44,7 +44,7 @@ SyntaxTree *Expression::getSyntaxTree() {
 
 ConstantExp::ConstantExp(int val): value(val) {}
 
-int ConstantExp::eval(EvaluationContext & ) {
+int ConstantExp::eval(EvaluationContext &) {
     return value;
 }
 
@@ -68,7 +68,7 @@ IdentifierExp::IdentifierExp(QString _name): name(_name) {}
 
 int IdentifierExp::eval(EvaluationContext & context) {
     if (!context.isDefined(name)) {
-        error(name.toStdString() + " is undefined");
+        error(name.toStdString() + " is undefined.");
     }
     return context.getValue(name);
 }
@@ -93,8 +93,8 @@ CompoundExp::CompoundExp(QString _op, Expression *_lhs, Expression *_rhs):
     op(_op), lhs(_lhs), rhs(_rhs) {}
 
 CompoundExp::~CompoundExp() {
-    lhs->~Expression();
-    rhs->~Expression();
+    if (lhs) lhs->~Expression();
+    if (rhs) rhs->~Expression();
 }
 
 int CompoundExp::eval(EvaluationContext & context) {

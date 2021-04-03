@@ -32,11 +32,10 @@ private:
     void read_from_begin();
 
 private slots:
-    void click_enter();
+    void press_enter();
     void click_run();
     void click_clear();
     void click_save_file();
     void click_load_file();
-    void click_delete();
 };
 #endif // MAINWINDOW_H

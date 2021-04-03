@@ -20,6 +20,12 @@ bool isBeginWord(StringType st) {
     return false;
 }
 
+bool isOperator(QString s) {
+    if (s == "-" || s == "+" || s == "*" || s == "/" || s == "**")
+        return true;
+    return false;
+}
+
 Statement::Statement() {}
 
 Statement::~Statement() {}
@@ -47,38 +53,67 @@ Expression *Statement::getExp(QVector<Token> tokens) {
         if (cur_token->getType() == Number) {
             Operands.push(new ConstantExp(cur_token->getNumber()));
         } else if (cur_token->getType() == String) {
-            Operands.push(new IdentifierExp(cur_token->toString()));
+            if (cur_token->getWordType() == Variable)
+                Operands.push(new IdentifierExp(cur_token->toString()));
+            else
+                error("Invalid variable name.");
         } else { //cur_token->getType() == Mark
             QString cur_mark = cur_token->getOp();
             if (cur_mark == "(" || cur_mark == "**") {
                 Operators.push(cur_mark);
             } else if (cur_mark != ")") {
-                while (!Operators.empty() && getPre(cur_mark) <= getPre(Operators.top())) {
+                while (!Operators.empty() && !Operands.empty() && getPre(cur_mark) <= getPre(Operators.top())) {
+                    if (Operands.size() < 2)
+                        error("Invalid Syntax! Please Check Your Input.");
                     Expression *right = Operands.pop();
                     Expression *left = Operands.pop();
                     QString curOp = Operators.pop();
+                    if (!isOperator(curOp))
+                        error("Mismatched bracket");
                     Operands.push(new CompoundExp(curOp, left, right));
                 }
                 Operators.push(cur_mark);
             } else { // cur_mark == ")"
                 while (Operators.top() != "(") {
+                    if (Operands.empty() || Operators.empty())
+                        error("Missing '('. Check your expression input.");
                     Expression *right = Operands.pop();
-                    Expression *left = Operands.pop();
                     QString curOp = Operators.pop();
+                    if (!isOperator(curOp))
+                        error("Mismatched bracket");
+                    Expression *left;
+                    if (curOp == "-" && Operands.empty()) {
+                        left = new ConstantExp(0);
+                    } else {
+                        left = Operands.pop();
+                    }
                     Operands.push(new CompoundExp(curOp, left, right));
                 }
+                if (Operators.empty())
+                    error("Missing '('. Check your expression input.");
                 Operators.pop();
             }
         }
         cur_token++;
     }
     while (Operands.size() > 1) {
+        if (Operators.empty())
+            error("Missing operator. Check your expression input.");
+        QString curOp = Operators.pop();
         Expression *right = Operands.pop();
         Expression *left = Operands.pop();
-        QString curOp = Operators.pop();
+        if (!isOperator(curOp))
+            error("Mismatched bracket");
         Operands.push(new CompoundExp(curOp, left, right));
     }
-    return Operands[0];
+    while (!Operators.empty()) { // for prefix '-'
+        QString curOp = Operators.pop();
+        Expression *right = Operands.pop();
+        Expression *left = new ConstantExp(0);
+        Operands.push(new CompoundExp(curOp, left, right));
+    }
+    if (Operands.length() == 1) return Operands[0];
+    else error("Illegal expression. (may be empty)");
 }
 
 int Statement::getPre(QString mark) {
@@ -119,6 +154,11 @@ StatementTree *RemStatement::getTree() {
 
 LetStatement::LetStatement(QVector<Token> tks) {
     getTokens = tks;
+    if (tks[0].getType() != String ||
+        tks[0].getWordType() != Variable)
+        error("Wrong format of variable.");
+    if (tks[1].toString() != "=")
+        error("Expect '=' in LET statement.");
     variableName = tks[0].toString();
     tks.pop_front();
     tks.pop_front();
@@ -203,7 +243,9 @@ StatementTree *InputStatement::getTree() {
 }
 
 GotoStatement::GotoStatement(QVector<Token> tks) {
-    if (tks.size() != 1 || tks[0].getType() != Number)
+    if (tks.length() != 1)
+        error("Invalid GOTO statement format.");
+    if (tks[0].getType() != Number)
         error("Target line should be a constant.");
     gotoLineNum = tks[0].getNumber();
 }
@@ -229,6 +271,8 @@ IfStatement::IfStatement(QVector<Token> tokens) {
     while (find_itr1 != tokens.end() && !isJudge(find_itr1->toString())) {
         find_itr1++;
     }
+    if (find_itr1 == tokens.end())
+        error("Expect compare symbol such as '<', '=' and '>'.");
     QVector<Token> expTokens1(tokens.begin(), find_itr1);
     exp1 = getExp(expTokens1);
     op = find_itr1->toString();
@@ -237,13 +281,17 @@ IfStatement::IfStatement(QVector<Token> tokens) {
     while (find_itr2 != tokens.end() && find_itr2->getWordType() != THEN) {
         find_itr2++;
     }
+    if (find_itr2 == tokens.end())
+        error("Expect 'THEN' word.");
     QVector<Token> expTokens2(find_itr1, find_itr2);
     exp2 = getExp(expTokens2);
     find_itr2++;
+    if (find_itr2 == tokens.end())
+        error("Expect target LineNumber");
     if (find_itr2 + 1 == tokens.end() && find_itr2->getType() == Number) {
         targetN = find_itr2->getNumber();
     } else {
-        error("Wrong grammar in IfStatement.");
+        error("Statement too long or wrong target format.");
     }
 }
 

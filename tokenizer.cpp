@@ -74,7 +74,15 @@ QVector<Token> getTokens(std::string cur_str) {
                 cur_token.append(qcur_str[index]);
                 index++;
             }
-            tokens.append(Token(cur_token, Number));
+            if (cur_token == "-") {
+                tokens.append(Token(cur_token, Mark));
+            } else {
+//                if (tokens.length() && tokens.back().toString() == "-" && cur_token[0] != '-') {
+//                    tokens.pop_back();
+//                    cur_token.push_front('-');
+//                }
+                tokens.append(Token(cur_token, Number));
+            }
             cur_token.clear();
         }
         if (cur_token[0].isLetter()) {

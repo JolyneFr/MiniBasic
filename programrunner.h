@@ -15,6 +15,7 @@ private:
     QLabel* error_display;
 
     Statement *parse(QVector<Token> tokens);
+    void renew_error();
     void sync_display();
 
     void run_codes();
@@ -24,6 +25,7 @@ public:
     void clear();
     void setDisplay(QTextBrowser*, QTextBrowser*, QTextBrowser*, QLabel*);
     void readStatement(QVector<Token> tokens);
+    void saveCode(std::string filename);
 };
 
 
