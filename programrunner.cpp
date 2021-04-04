@@ -58,6 +58,8 @@ void ProgramRunner::readStatement(QVector<Token> tokens) {
         } else if (cur_t == RUN) {
             //code_display->insertPlainText("RUN\n");
             run_codes();
+        } else if (cur_t == LIST) {
+            // do nothing
         } else {
             error("Missing Line Number for this Statement. (wrong statement type)");
         }
@@ -74,8 +76,6 @@ void ProgramRunner::readStatement(QVector<Token> tokens) {
             if (!curStmt)
                 error("Type of statement doesn't exist.");
             (*programContainer)[lineNumber] = curStmt;
-            StatementTree *curTree = curStmt->getTree();
-            syntax_display->insertPlainText(curTree->getSyntaxStr(lineNumber));
         }
         sync_display();
     } else {
@@ -91,6 +91,10 @@ void ProgramRunner::run_codes() {
     QMap<int, Statement*>::Iterator cur_code = programContainer->begin();
     try {
     while (cur_code != programContainer->end()) {
+        Statement* curStmt = cur_code.value();
+        int lineNumber = cur_code.key();
+        StatementTree *curTree = curStmt->getTree();
+        syntax_display->insertPlainText(curTree->getSyntaxStr(lineNumber));
         int status = cur_code.value()->execute(programContext);
         switch (status) {
             case -2: return;
