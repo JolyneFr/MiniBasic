@@ -19,6 +19,8 @@ public:
    int getValue(QString var);
    bool isDefined(QString var);
    void clear();
+   void merge(EvaluationContext &);
+   QMap<QString, int> getTable() const;
 
 private:
 

@@ -83,6 +83,7 @@ class ConstantExp: public Expression {
 public:
 
    ConstantExp(int val);
+   ConstantExp(int val, bool p);
 
    virtual int eval(EvaluationContext & context);
    virtual QString toString();
@@ -92,8 +93,8 @@ public:
    virtual SyntaxTree *getSyntaxTree();
 
 private:
-
-   int value;
+    bool isPrefix0;
+    int value;
 
 };
 

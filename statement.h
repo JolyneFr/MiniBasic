@@ -26,7 +26,7 @@ public:
  */
 
 enum StatementType { RemStmt, LetStmt, PrintStmt, InputStmt,
-                     GotoStmt, IfStmt, EndStmt };
+                     GotoStmt, IfStmt, EndStmt, ErrorStmt };
 
 /*
  * Class: Statement
@@ -131,6 +131,17 @@ public:
     virtual int execute(EvaluationContext &progCont);
     virtual QString toString();
     virtual StatementTree *getTree();
+};
+
+class ErrorStatement: public Statement {
+public:
+    ErrorStatement();
+    virtual StatementType getType();
+    virtual int execute(EvaluationContext &progCont);
+    virtual QString toString();
+    virtual StatementTree *getTree();
+private:
+    QString text;
 };
 
 #endif // STATEMENT_H

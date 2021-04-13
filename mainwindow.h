@@ -25,6 +25,8 @@ private:
     ProgramRunner prog_runner;
     int lineIndex = 1;
 
+    bool HAS_HELP = true;
+
     void display_code_from_file(const std::string &filename);
     void save_file(const std::string &filename);
     void append_code();
@@ -34,6 +36,7 @@ private:
 private slots:
     void press_enter();
     void click_run();
+    void click_help();
     void click_clear();
     void click_save_file();
     void click_load_file();

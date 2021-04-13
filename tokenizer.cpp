@@ -77,10 +77,13 @@ QVector<Token> getTokens(std::string cur_str) {
             if (cur_token == "-") {
                 tokens.append(Token(cur_token, Mark));
             } else {
-//                if (tokens.length() && tokens.back().toString() == "-" && cur_token[0] != '-') {
-//                    tokens.pop_back();
-//                    cur_token.push_front('-');
-//                }
+                QVector<Token>::iterator last = tokens.end() - 1;
+                QVector<Token>::iterator before_last = last - 1;
+                if (tokens.length() && last->toString() == "-" && cur_token[0] != '-' &&
+                        (before_last->toString() == "=" || before_last->toString() == "(")) {
+                    tokens.pop_back();
+                    cur_token.push_front('-');
+                }
                 tokens.append(Token(cur_token, Number));
             }
             cur_token.clear();

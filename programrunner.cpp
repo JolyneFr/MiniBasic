@@ -6,17 +6,20 @@
 
 ProgramRunner::ProgramRunner() {
     programContainer = new QMap<int, Statement*>();
+    programBuffer = new QMap<int, QString>();
+    ifParsed = false;
 }
 
 ProgramRunner::~ProgramRunner() {
     programContainer->~QMap();
 }
 
-void ProgramRunner::setDisplay(QTextBrowser *cd, QTextBrowser *rd, QTextBrowser *sd, QLabel *ed) {
+void ProgramRunner::setDisplay(QTextBrowser *cd, QTextBrowser *rd, QTextBrowser *sd, QLabel *ed, QTextBrowser *gd) {
     code_display = cd;
     res_display = rd;
     syntax_display = sd;
     error_display = ed;
+    global_display = gd;
 }
 
 void ProgramRunner::renew_error() {
@@ -34,18 +37,37 @@ void ProgramRunner::execute_directly(Statement* stmt) {
 
 void ProgramRunner::clear() {
     programContainer->clear();
+    programBuffer->clear();
     programContext.clear();
+    renew_error();
+    syntax_display->clear();
+    res_display->clear();
+    sync_display();
 }
 
-void ProgramRunner::readStatement(QVector<Token> tokens) {
-    try {
+void ProgramRunner::readStatement(QString line) {
+    try{
     renew_error();
-    if (tokens[0].getType() == String) { // execute directly
-        StringType cur_t = tokens[0].getWordType();
-        tokens.pop_front();
+    line = line.trimmed();
+    if (!line.size()) return;
+    Token begin = getTokens(line.toStdString())[0];
+    if (begin.getType() == Number) {
+        ifParsed = false;
+        line = line.mid(begin.toString().length()).trimmed();
+        if (line.length() == 0) {
+            programBuffer->erase(programBuffer->find(begin.getNumber()));
+        } else {
+            programBuffer->insert(begin.getNumber(), line);
+        }
+        sync_display();
+    } else if (begin.getType() == String) {
+        StringType cur_t = begin.getWordType();
+        line = line.mid(begin.toString().length()).trimmed();
+        QVector<Token> tokens = getTokens(line.toStdString());
         if (cur_t == LET) {
             LetStatement* exeStmt = new LetStatement(tokens);
             exeStmt->execute(programContext);
+            sync_display();
             //code_display->insertPlainText(exeStmt->toString() + "\n");
         } else if (cur_t == PRINT) {
             PrintStatement* exeStmt = new PrintStatement(tokens, res_display);
@@ -54,9 +76,11 @@ void ProgramRunner::readStatement(QVector<Token> tokens) {
         } else if (cur_t == INPUT) {
             InputStatement* exeStmt = new InputStatement(tokens);
             exeStmt->execute(programContext);
+            sync_display();
             //code_display->insertPlainText(exeStmt->toString() + "\n");
         } else if (cur_t == RUN) {
             //code_display->insertPlainText("RUN\n");
+            if (!ifParsed) parse_codes();
             run_codes();
         } else if (cur_t == LIST) {
             // do nothing
@@ -64,38 +88,61 @@ void ProgramRunner::readStatement(QVector<Token> tokens) {
             error("Missing Line Number for this Statement. (wrong statement type)");
         }
         return;
-    } else if (tokens[0].getType() == Number) { //normal statement
-        int lineNumber = tokens[0].getNumber();
-        if (lineNumber <= 0)
-            error("LineNumber must be greater than 0.");
-        tokens.pop_front();
-        if (tokens.empty()) {
-            programContainer->remove(lineNumber);
-        } else {
-            Statement *curStmt = parse(tokens);
-            if (!curStmt)
-                error("Type of statement doesn't exist.");
-            (*programContainer)[lineNumber] = curStmt;
-        }
-        sync_display();
-    } else {
-        error("Unexpected beginning: Should be LineNumber or Statement.");
-    }
+    } else error("Unexpected beginning token.");
     } catch (std::string msg) {
-        error_display->setText("ERROR: " + QString::fromStdString(msg));
+        error_display->setText("INPUT ERROR: " + QString::fromStdString(msg));
         return;
     }
+}
+
+void ProgramRunner::parseStatement(int lineNumber, QVector<Token> tokens) {
+    try {
+    if (lineNumber <= 0)
+        error("LineNumber must be greater than 0.");
+    if (tokens.empty()) {
+        programContainer->remove(lineNumber);
+    } else {
+        Statement *curStmt = parse(tokens);
+        if (!curStmt)
+           error("Type of statement doesn't exist.");
+        (*programContainer)[lineNumber] = curStmt;
+    }
+    } catch (std::string msg) {
+        error_display->setText("PARSE ERROR: " + QString::fromStdString(msg) +
+                               "at line " + QString::number(lineNumber));
+        (*programContainer)[lineNumber] = new ErrorStatement();
+        return;
+    }
+}
+
+void ProgramRunner::parse_codes() {
+    QMap<int, QString>::Iterator cur_code = programBuffer->begin();
+    while (cur_code != programBuffer->end()) {
+        QVector<Token> tokens = getTokens(cur_code.value().toStdString());
+        parseStatement(cur_code.key(), tokens);
+        cur_code++;
+    }
+    ifParsed = true;
 }
 
 void ProgramRunner::run_codes() {
     QMap<int, Statement*>::Iterator cur_code = programContainer->begin();
     try {
+    syntax_display->clear();
+    res_display->clear();
+    // display the syntax tree first
     while (cur_code != programContainer->end()) {
         Statement* curStmt = cur_code.value();
         int lineNumber = cur_code.key();
         StatementTree *curTree = curStmt->getTree();
         syntax_display->insertPlainText(curTree->getSyntaxStr(lineNumber));
+        cur_code++;
+    }
+    // then run the codes. What an idiot idea!
+    cur_code = programContainer->begin();
+    while (cur_code != programContainer->end()) {
         int status = cur_code.value()->execute(programContext);
+        sync_display();
         switch (status) {
             case -2: return;
             case -1: error("Unexpected program interruption."); return;
@@ -148,11 +195,18 @@ Statement *ProgramRunner::parse(QVector<Token> tokens) {
 
 void ProgramRunner::sync_display() {
     code_display->clear();
-    QMap<int, Statement*>::Iterator cur_code = programContainer->begin();
-    while (cur_code != programContainer->end()) {
+    global_display->clear();
+    QMap<int, QString>::Iterator cur_code = programBuffer->begin();
+    while (cur_code != programBuffer->end()) {
         code_display->insertPlainText(QString::number(cur_code.key()) + " " +
-                                      cur_code.value()->toString() + "\n");
+                                      cur_code.value() + "\n");
         cur_code++;
+    }
+    QMap<QString, int>::ConstIterator cur_variable = programContext.getTable().cbegin();
+    while (cur_variable != programContext.getTable().cend()) {
+        global_display->insertPlainText(cur_variable.key() + ": " +
+                                        QString::number(cur_variable.value()) + "\n");
+        cur_variable++;
     }
 }
 

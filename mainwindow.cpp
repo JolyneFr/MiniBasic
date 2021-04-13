@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
+#include <QDesktopServices>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,9 +16,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ciw_input, &QLineEdit::returnPressed, this, &MainWindow::press_enter);
     connect(ui->action_save, &QAction::triggered, this, &MainWindow::click_save_file);
     connect(ui->action_load, &QAction::triggered, this, &MainWindow::click_load_file);
-    //connect(ui->delete_button, &QPushButton::clicked, this, &MainWindow::click_delete);
+    connect(ui->help_button, &QPushButton::clicked, this, &MainWindow::click_help);
     cur_prog = new Program();
-    prog_runner.setDisplay(ui->code_display, ui->result_display, ui->ss_display, ui->error_label);
+    prog_runner.setDisplay(ui->code_display, ui->result_display, ui->ss_display, ui->error_label, ui->gc_display);
+    ui->action_save->setDisabled(true);
+
+    if (HAS_HELP)
+        QDesktopServices::openUrl(QUrl::fromLocalFile("../miniBasic/Help.pdf"));
 }
 
 MainWindow::~MainWindow()
@@ -33,18 +38,21 @@ void MainWindow::press_enter()
 
 void MainWindow::click_run()
 {
-    QVector<Token> tokens = getTokens("RUN");
-    prog_runner.readStatement(tokens);
+    prog_runner.readStatement("RUN");
     lineIndex++;
+}
+
+void MainWindow::click_help()
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile("../miniBasic/Help.pdf"));
 }
 
 void MainWindow::read_from_begin()
 {
     lineIndex = 1;
     while (lineIndex <= cur_prog->length()) {
-        string curStmt = cur_prog->getStatement(lineIndex);
-        QVector<Token> tokens = getTokens(curStmt);
-        if (!tokens.empty()) prog_runner.readStatement(tokens);
+        QString curStmt = QString::fromStdString(cur_prog->getStatement(lineIndex));
+        prog_runner.readStatement(curStmt);
         lineIndex++;
     }
 }
@@ -75,8 +83,11 @@ void MainWindow::save_file(const std::string &filename)
 
 void MainWindow::click_load_file()
 {
-    click_clear();
     cur_prog->clear();
+    ui->code_display->clear();
+    ui->result_display->clear();
+    ui->ss_display->clear();
+
     QString filename = QFileDialog::getOpenFileName(this,
                        tr("Open your Terrible Basic Program！"),
                        "../MiniBasic/Code/", tr("text file(*txt)"));
@@ -119,8 +130,10 @@ void MainWindow::append_code()
     if (qtext == "QUIT") {
         this->close();
     }
-    QVector<Token> tokens = getTokens(cur_text);
-    prog_runner.readStatement(tokens);
-
+    if (qtext == "HELP") {
+        QDesktopServices::openUrl(QUrl::fromLocalFile("../miniBasic/Help.pdf"));
+        return;
+    }
+    prog_runner.readStatement(qtext);
     lineIndex++;
 }

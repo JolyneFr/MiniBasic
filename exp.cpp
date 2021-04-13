@@ -42,7 +42,9 @@ SyntaxTree *Expression::getSyntaxTree() {
     return nullptr;
 }
 
-ConstantExp::ConstantExp(int val): value(val) {}
+ConstantExp::ConstantExp(int val): isPrefix0(false), value(val) {}
+
+ConstantExp::ConstantExp(int val, bool p): isPrefix0(p), value(val) {}
 
 int ConstantExp::eval(EvaluationContext &) {
     return value;
@@ -61,7 +63,8 @@ int ConstantExp::getConstantValue() {
 }
 
 SyntaxTree *ConstantExp::getSyntaxTree() {
-    return new SyntaxTree(QString::number(value));
+    if (!isPrefix0) return new SyntaxTree(QString::number(value));
+    else return nullptr;
 }
 
 IdentifierExp::IdentifierExp(QString _name): name(_name) {}

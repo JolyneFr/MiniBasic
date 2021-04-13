@@ -19,3 +19,13 @@ bool EvaluationContext::isDefined(QString var) {
 void EvaluationContext::clear() {
     symbolTable.clear();
 }
+
+QMap<QString, int> EvaluationContext::getTable() const { return symbolTable; }
+
+void EvaluationContext::merge(EvaluationContext &global) {
+    QMap<QString, int>::const_iterator cdata = global.getTable().cbegin();
+    while (cdata != global.getTable().cend()) {
+        symbolTable[cdata.key()] = cdata.value();
+        cdata++;
+    }
+}
