@@ -7,7 +7,6 @@
 ProgramRunner::ProgramRunner() {
     programContainer = new QMap<int, Statement*>();
     programBuffer = new QMap<int, QString>();
-    ifParsed = false;
 }
 
 ProgramRunner::~ProgramRunner() {
@@ -52,7 +51,6 @@ void ProgramRunner::readStatement(QString line) {
     if (!line.size()) return;
     Token begin = getTokens(line.toStdString())[0];
     if (begin.getType() == Number) {
-        ifParsed = false;
         line = line.mid(begin.toString().length()).trimmed();
         if (line.length() == 0) {
             programBuffer->erase(programBuffer->find(begin.getNumber()));
@@ -80,7 +78,7 @@ void ProgramRunner::readStatement(QString line) {
             //code_display->insertPlainText(exeStmt->toString() + "\n");
         } else if (cur_t == RUN) {
             //code_display->insertPlainText("RUN\n");
-            if (!ifParsed) parse_codes();
+            parse_codes();
             run_codes();
         } else if (cur_t == LIST) {
             // do nothing
@@ -110,19 +108,19 @@ void ProgramRunner::parseStatement(int lineNumber, QVector<Token> tokens) {
     } catch (std::string msg) {
         error_display->setText("PARSE ERROR: " + QString::fromStdString(msg) +
                                "at line " + QString::number(lineNumber));
-        (*programContainer)[lineNumber] = new ErrorStatement();
+        (*programContainer)[lineNumber] = new ErrorStatement(QString::fromStdString(msg));
         return;
     }
 }
 
 void ProgramRunner::parse_codes() {
+    programContainer->clear();
     QMap<int, QString>::Iterator cur_code = programBuffer->begin();
     while (cur_code != programBuffer->end()) {
         QVector<Token> tokens = getTokens(cur_code.value().toStdString());
         parseStatement(cur_code.key(), tokens);
         cur_code++;
     }
-    ifParsed = true;
 }
 
 void ProgramRunner::run_codes() {
@@ -131,10 +129,12 @@ void ProgramRunner::run_codes() {
     syntax_display->clear();
     res_display->clear();
     // display the syntax tree first
+
     while (cur_code != programContainer->end()) {
         Statement* curStmt = cur_code.value();
         int lineNumber = cur_code.key();
         StatementTree *curTree = curStmt->getTree();
+        QString syntaxStr = curTree->getSyntaxStr(lineNumber);
         syntax_display->insertPlainText(curTree->getSyntaxStr(lineNumber));
         cur_code++;
     }
@@ -145,7 +145,7 @@ void ProgramRunner::run_codes() {
         sync_display();
         switch (status) {
             case -2: return;
-            case -1: error("Unexpected program interruption."); return;
+            case -1: return; // parse error. keep the error message
             case 0:  cur_code++;break;
             default: {
                 cur_code = programContainer->find(status);
@@ -165,32 +165,30 @@ void ProgramRunner::run_codes() {
 Statement *ProgramRunner::parse(QVector<Token> tokens) {
     StringType curWordType = tokens[0].getWordType();
     tokens.pop_front();
-    Statement *curStmt;
     switch (curWordType) {
         case REM: {
-            curStmt = new RemStatement(tokens); break;
+            return new RemStatement(tokens);
         }
         case LET: {
-            curStmt = new LetStatement(tokens); break;
+            return new LetStatement(tokens); break;
         }
         case PRINT: {
-            curStmt = new PrintStatement(tokens, res_display); break;
+            return new PrintStatement(tokens, res_display); break;
         }
         case INPUT: {
-            curStmt = new InputStatement(tokens); break;
+            return new InputStatement(tokens); break;
         }
         case GOTO: {
-            curStmt = new GotoStatement(tokens); break;
+            return new GotoStatement(tokens); break;
         }
         case IF: {
-            curStmt = new IfStatement(tokens); break;
+            return new IfStatement(tokens); break;
         }
         case END: {
-            curStmt = new EndStatement(); break;
+            return new EndStatement(); break;
         }
-        default: curStmt = nullptr;
+        default: return nullptr;
     }
-    return curStmt;
 }
 
 void ProgramRunner::sync_display() {

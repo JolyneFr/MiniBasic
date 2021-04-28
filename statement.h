@@ -135,13 +135,14 @@ public:
 
 class ErrorStatement: public Statement {
 public:
-    ErrorStatement();
+    ErrorStatement(QString msg);
     virtual StatementType getType();
     virtual int execute(EvaluationContext &progCont);
     virtual QString toString();
     virtual StatementTree *getTree();
 private:
     QString text;
+    QString errorMessage;
 };
 
 #endif // STATEMENT_H

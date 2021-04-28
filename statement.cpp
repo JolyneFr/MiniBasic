@@ -150,8 +150,10 @@ QString RemStatement::toString() {
 }
 
 StatementTree *RemStatement::getTree() {
+    SyntaxTree **childs = new SyntaxTree*[1];
     SyntaxTree *rem = new SyntaxTree(text);
-    return new StatementTree("REM", &rem, 1);
+    childs[0] = rem;
+    return new StatementTree("REM", childs, 1);
 }
 
 LetStatement::LetStatement(QVector<Token> tks) {
@@ -214,8 +216,10 @@ QString PrintStatement::toString() {
 }
 
 StatementTree *PrintStatement::getTree() {
+    SyntaxTree **childs = new SyntaxTree*[1];
     SyntaxTree *t = printExp->getSyntaxTree();
-    return new StatementTree("PRINT", &t, 1);
+    childs[0] = t;
+    return new StatementTree("PRINT", childs, 1);
 }
 
 InputStatement::InputStatement(QVector<Token> tks) {
@@ -240,8 +244,10 @@ QString InputStatement::toString() {
 }
 
 StatementTree *InputStatement::getTree() {
+    SyntaxTree **childs = new SyntaxTree*[1];
     SyntaxTree *t = new SyntaxTree(variableName);
-    return new StatementTree("INPUT", &t, 1);
+    childs[0] = t;
+    return new StatementTree("INPUT", childs, 1);
 }
 
 GotoStatement::GotoStatement(QVector<Token> tks) {
@@ -265,8 +271,10 @@ QString GotoStatement::toString() {
 }
 
 StatementTree *GotoStatement::getTree() {
+    SyntaxTree **childs = new SyntaxTree*[1];
     SyntaxTree *t = new SyntaxTree(QString::number(gotoLineNum));
-    return new StatementTree("GOTO", &t, 1);
+    childs[0] = t;
+    return new StatementTree("GOTO", childs, 1);
 }
 
 IfStatement::IfStatement(QVector<Token> tokens) {
@@ -343,11 +351,14 @@ StatementTree *EndStatement::getTree() {
     return new StatementTree("END", nullptr, 0);
 }
 
-ErrorStatement::ErrorStatement() {}
+ErrorStatement::ErrorStatement(QString msg): errorMessage(msg) {}
 
 StatementType ErrorStatement::getType() { return ErrorStmt; }
 
-int ErrorStatement::execute(EvaluationContext &) { return -1; }
+int ErrorStatement::execute(EvaluationContext &) {
+    error("Executing error statement with problem: " + errorMessage.toStdString());
+    return -1;
+}
 
 QString ErrorStatement::toString() { return "ERROR"; }
 

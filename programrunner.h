@@ -24,7 +24,6 @@ private:
 public:
     ProgramRunner();
     ~ProgramRunner();
-    bool ifParsed;
     void clear();
     void run_codes();
     void parse_codes();
