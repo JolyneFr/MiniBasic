@@ -178,6 +178,9 @@ Statement *ProgramRunner::parse(QVector<Token> tokens) {
         case INPUT: {
             return new InputStatement(tokens); break;
         }
+        case INPUTS: {
+            return new InputsStatement(tokens); break;
+        }
         case GOTO: {
             return new GotoStatement(tokens); break;
         }
@@ -200,12 +203,19 @@ void ProgramRunner::sync_display() {
                                       cur_code.value() + "\n");
         cur_code++;
     }
+    QMap<QString, QString>::ConstIterator cur_string = programContext.getStringTable().cbegin();
+    while (cur_string != programContext.getStringTable().cend()) {
+        global_display->insertPlainText(cur_string.key() + ": STR = " +
+                                        cur_string.value() + "\n");
+        cur_string++;
+    }
     QMap<QString, int>::ConstIterator cur_variable = programContext.getTable().cbegin();
     while (cur_variable != programContext.getTable().cend()) {
-        global_display->insertPlainText(cur_variable.key() + ": " +
+        global_display->insertPlainText(cur_variable.key() + ": INT = " +
                                         QString::number(cur_variable.value()) + "\n");
         cur_variable++;
     }
+
 }
 
 void ProgramRunner::saveCode(std::string filename) {

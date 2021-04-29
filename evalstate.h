@@ -16,15 +16,20 @@ class EvaluationContext {
 public:
 
    void setValue(QString var, int value);
+   void setValue(QString var, QString value);
    int getValue(QString var);
-   bool isDefined(QString var);
+   QString getString(QString var);
+   bool isDefinedInt(QString var);
+   bool isDefinedString(QString var);
    void clear();
    void merge(EvaluationContext &);
    QMap<QString, int> getTable() const;
+   QMap<QString, QString> getStringTable() const;
 
 private:
 
    QMap<QString, int> symbolTable;
+   QMap<QString, QString> stringTable;
 
 };
 

@@ -46,6 +46,10 @@ StatementTree *Statement::getTree() {
 }
 
 Expression *Statement::getExp(QVector<Token> tokens) {
+
+    // judge StringExp first
+    if (tokens.empty()) error("Expect expression.");
+
     QStack<QString> Operators;
     QStack<Expression*> Operands;
     QVector<Token>::Iterator cur_token = tokens.begin();
@@ -166,7 +170,11 @@ LetStatement::LetStatement(QVector<Token> tks) {
     variableName = tks[0].toString();
     tks.pop_front();
     tks.pop_front();
-    rightExp = getExp(tks);
+    if (tks[0].toString() == "\"") {
+      if (tks.size() != 3 || tks[2].toString() != "\"")
+          throw "Illegal format of string!";
+      rightExp = new StringExp(tks[1].toString());
+    } else rightExp = getExp(tks);
 }
 
 LetStatement::~LetStatement() { rightExp->~Expression(); }
@@ -174,7 +182,11 @@ LetStatement::~LetStatement() { rightExp->~Expression(); }
 StatementType LetStatement::getType() { return LetStmt; }
 
 int LetStatement::execute(EvaluationContext &programContext) {
-    programContext.setValue(variableName, rightExp->eval(programContext));
+    if (rightExp->type() == STRING) {
+        programContext.setValue(variableName, rightExp->toString());
+    } else {
+        programContext.setValue(variableName, rightExp->eval(programContext));
+    }
     return 0;
 }
 
@@ -248,6 +260,36 @@ StatementTree *InputStatement::getTree() {
     SyntaxTree *t = new SyntaxTree(variableName);
     childs[0] = t;
     return new StatementTree("INPUT", childs, 1);
+}
+
+InputsStatement::InputsStatement(QVector<Token> tks) {
+    if (tks.length() == 1 && tks[0].getType() == String &&
+            tks[0].getWordType() == Variable) {
+        variableName = tks[0].toString();
+    } else {
+        error("Invalid Input Statment Format!");
+    }
+}
+
+StatementType InputsStatement::getType() {
+    return InputsStmt;
+}
+
+int InputsStatement::execute(EvaluationContext &programContext) {
+    QString text = QInputDialog::getText(NULL, "Input Dialog", "Please input " + variableName + ":");
+    programContext.setValue(variableName, text);
+    return 0;
+}
+
+QString InputsStatement::toString() {
+    return "INPUTS " + variableName;
+}
+
+StatementTree *InputsStatement::getTree() {
+    SyntaxTree **childs = new SyntaxTree*[1];
+    SyntaxTree *t = new SyntaxTree(variableName);
+    childs[0] = t;
+    return new StatementTree("INPUTS", childs, 1);
 }
 
 GotoStatement::GotoStatement(QVector<Token> tks) {

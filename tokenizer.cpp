@@ -1,7 +1,7 @@
 #include "tokenizer.h"
 #include <QtDebug>
 
-static QString matchStr[14] = {"REM", "LET", "PRINT", "INPUT", "GOTO", "IF", "END", "THEN",
+static QString matchStr[15] = {"REM", "LET", "PRINT", "INPUT", "INPUTS", "GOTO", "IF", "END", "THEN",
                        "RUN", "LOAD", "LIST", "CLEAR", "HELP", "QUIT"};
 
 Token::Token(QString ts, TokenType tt): tokenString(ts), tType(tt) {
@@ -51,6 +51,35 @@ QVector<Token> getTokens(std::string cur_str) {
         if (cur_token.isEmpty()) {
             cur_token.append(qcur_str[index]);
             index++;
+
+            if (cur_token[0] == '"') {
+                tokens.append(Token(cur_token, Mark));
+                cur_token.clear();
+
+                while (cur_str[index] != '"' && cur_str[index] != '\0') {
+                    if (cur_str[index] != '{' && cur_str[index] != '}') {
+                        cur_token.append(qcur_str[index]);
+                        index++;
+                    } else {
+                        if (cur_str[index] == '{') {
+                            if (cur_str[index + 1] != '}') {
+                                throw "Single '{' or '}' is not allowed.";
+                            }
+                            tokens.append(Token(cur_token, String));
+                            cur_token.clear();
+                            tokens.append(Token("{}", String));
+                            index += 2;
+                        } else throw "Single '{' or '}' is not allowed.";
+                    }
+                }
+                if (cur_str[index] == '\0') throw "Unclosed \" is illegal";
+                tokens.append(Token(cur_token, String));
+                tokens.append(Token("\"", Mark));
+                cur_token.clear();
+                index++;
+                continue;
+            }
+
             if (cur_token[0] == '<' || cur_token[0] == '>' || cur_token[0] == '=' || cur_token[0] == '(' ||
                 cur_token[0] == ')' || cur_token[0] == '+' ||
                     (cur_token[0] == '-' && (index > 0 && (tokens.back().getType() != Mark && ((tokens.back().getType() == String) == (tokens.back().getWordType() == Variable))))) ||

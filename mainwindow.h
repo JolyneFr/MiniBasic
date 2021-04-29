@@ -25,7 +25,7 @@ private:
     ProgramRunner prog_runner;
     int lineIndex = 1;
 
-    bool HAS_HELP = true;
+    bool HAS_HELP = false;
 
     void display_code_from_file(const std::string &filename);
     void save_file(const std::string &filename);

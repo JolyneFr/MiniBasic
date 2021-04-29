@@ -25,7 +25,7 @@ public:
  * IfStmt, EndStmt.
  */
 
-enum StatementType { RemStmt, LetStmt, PrintStmt, InputStmt,
+enum StatementType { RemStmt, LetStmt, PrintStmt, InputStmt, InputsStmt,
                      GotoStmt, IfStmt, EndStmt, ErrorStmt };
 
 /*
@@ -68,6 +68,7 @@ private:
     Expression* rightExp;
 public:
     LetStatement(QVector<Token> tokens);
+    LetStatement(QString readString);
     virtual ~LetStatement();
     virtual StatementType getType();
     virtual int execute(EvaluationContext &programContext);
@@ -93,6 +94,17 @@ private:
     QString variableName;
 public:
     InputStatement(QVector<Token> tokens);
+    virtual StatementType getType();
+    virtual int execute(EvaluationContext &programContext);
+    virtual QString toString();
+    virtual StatementTree *getTree();
+};
+
+class InputsStatement: public Statement {
+private:
+    QString variableName;
+public:
+    InputsStatement(QVector<Token> tokens);
     virtual StatementType getType();
     virtual int execute(EvaluationContext &programContext);
     virtual QString toString();

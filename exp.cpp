@@ -42,6 +42,11 @@ SyntaxTree *Expression::getSyntaxTree() {
     return nullptr;
 }
 
+QString Expression::evalString(EvaluationContext &) {
+    error("Calling unimplemented method from wrong class object.");
+    return "\0";
+}
+
 ConstantExp::ConstantExp(int val): isPrefix0(false), value(val) {}
 
 ConstantExp::ConstantExp(int val, bool p): isPrefix0(p), value(val) {}
@@ -70,7 +75,7 @@ SyntaxTree *ConstantExp::getSyntaxTree() {
 IdentifierExp::IdentifierExp(QString _name): name(_name) {}
 
 int IdentifierExp::eval(EvaluationContext & context) {
-    if (!context.isDefined(name)) {
+    if (!context.isDefinedInt(name)) {
         error(name.toStdString() + " is undefined.");
     }
     return context.getValue(name);
@@ -143,4 +148,48 @@ SyntaxTree *CompoundExp::getSyntaxTree() {
     SyntaxTree *l = lhs->getSyntaxTree();
     SyntaxTree *r = rhs->getSyntaxTree();
     return new SyntaxTree(op, l, r);
+}
+
+StringIdentifierExp::StringIdentifierExp(QString _name): name(_name) {}
+
+StringIdentifierExp::~StringIdentifierExp() {}
+
+ExpressionType StringIdentifierExp::type() {
+    return STRINGIDENTIFIER;
+}
+
+QString StringIdentifierExp::toString() {
+    return name;
+}
+
+QString StringIdentifierExp::evalString(EvaluationContext &context) {
+    if (!context.isDefinedString(name)) {
+        error(name.toStdString() + " is undefined.");
+    }
+    return context.getString(name);
+}
+
+SyntaxTree *StringIdentifierExp::getSyntaxTree() {
+    return new SyntaxTree(name);
+}
+
+StringExp::StringExp(QString _value): value(_value) {}
+
+StringExp::~StringExp() {}
+
+
+ExpressionType StringExp::type() {
+    return STRING;
+}
+
+QString StringExp::toString() {
+    return "\"" + value + "\"";
+}
+
+SyntaxTree *StringExp::getSyntaxTree() {
+    return new SyntaxTree(value);
+}
+
+int StringExp::eval(EvaluationContext &) {
+    return -1;
 }

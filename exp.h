@@ -40,7 +40,9 @@ public:
  * expression types: CONSTANT, IDENTIFIER, and COMPOUND.
  */
 
-enum ExpressionType { CONSTANT, IDENTIFIER, COMPOUND };
+enum ExpressionType { CONSTANT, IDENTIFIER, COMPOUND, STRING, STRINGIDENTIFIER };
+
+enum IdentifierType { INT, STR };
 
 /*
  * Class: Expression
@@ -69,6 +71,7 @@ public:
    virtual Expression *getLHS();
    virtual Expression *getRHS();
    virtual SyntaxTree *getSyntaxTree();
+   virtual QString evalString(EvaluationContext &);
 
 };
 
@@ -150,6 +153,40 @@ private:
    QString op;
    Expression *lhs, *rhs;
 
+};
+
+class StringIdentifierExp: public Expression {
+
+public:
+
+    StringIdentifierExp(QString _name);
+    virtual ~StringIdentifierExp();
+
+    virtual ExpressionType type();
+    virtual QString toString();
+    virtual QString evalString(EvaluationContext & context);
+    virtual SyntaxTree *getSyntaxTree();
+
+private:
+
+    QString name;
+};
+
+class StringExp: public Expression {
+
+public:
+
+    StringExp(QString _value);
+    virtual ~StringExp();
+
+    virtual ExpressionType type();
+    virtual QString toString();
+    virtual int eval(EvaluationContext & context);
+    virtual SyntaxTree *getSyntaxTree();
+
+private:
+
+    QString value;
 };
 
 #endif
