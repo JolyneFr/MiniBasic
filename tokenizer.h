@@ -6,7 +6,7 @@
 #include <QString>
 
 enum TokenType { Number, String, Mark };
-enum StringType { REM, LET, PRINT, INPUT, INPUTS, GOTO, IF, END, THEN,
+enum StringType { REM, LET, PRINT, PRINTF, INPUT, INPUTS, GOTO, IF, END, THEN,
                 RUN, LOAD, LIST, CLEAR, HELP, QUIT, Variable, NONE };
 
 class Token {

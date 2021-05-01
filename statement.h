@@ -25,7 +25,7 @@ public:
  * IfStmt, EndStmt.
  */
 
-enum StatementType { RemStmt, LetStmt, PrintStmt, InputStmt, InputsStmt,
+enum StatementType { RemStmt, LetStmt, PrintStmt, PrintfStmt, InputStmt, InputsStmt,
                      GotoStmt, IfStmt, EndStmt, ErrorStmt };
 
 /*
@@ -83,6 +83,25 @@ private:
 public:
     PrintStatement(QVector<Token> tokens, QTextBrowser* rd);
     virtual ~PrintStatement();
+    virtual StatementType getType();
+    virtual int execute(EvaluationContext &programContext);
+    virtual QString toString();
+    virtual StatementTree *getTree();
+};
+
+class PrintfStatement: public Statement {
+private:
+
+    enum fmtType { var, str, fmt };
+    QTextBrowser* res_display;
+    int paramNumber;
+    QVector<QString> paramNames;
+    QVector<QString> paramStrings;
+    QVector<QString> format;
+    QVector<fmtType> fmtTable;
+public:
+    PrintfStatement(QVector<Token> tokens, QTextBrowser* rd);
+    virtual ~PrintfStatement();
     virtual StatementType getType();
     virtual int execute(EvaluationContext &programContext);
     virtual QString toString();

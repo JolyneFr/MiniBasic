@@ -234,6 +234,96 @@ StatementTree *PrintStatement::getTree() {
     return new StatementTree("PRINT", childs, 1);
 }
 
+PrintfStatement::PrintfStatement(QVector<Token> tokens, QTextBrowser* rd): res_display(rd) {
+    getTokens = tokens;
+    QVector<int> paramIndex;
+    paramNumber = 0;
+    if (tokens[0].toString() == "\"") {
+        // get paramNumber and format
+        int index = 1;
+        while (tokens[index].toString() != "\"") {
+            if (tokens[index].toString() == "{}") {
+                fmtTable.push_back(str);
+                paramNumber++;
+                paramIndex.push_back(fmtTable.size() - 1);
+            } else {
+                fmtTable.push_back(fmt);
+                format.push_back(tokens[index].toString());
+            }
+            index++;
+        }
+        index++;
+        for (int i = 0; i < paramNumber; i++) {
+            if (tokens[index++].toString() != ",") {
+                error("There should be ',' before each param.");
+            }
+            if (tokens[index].toString() == "\"") {
+                index++;
+                fmtTable[paramIndex[i]] = str;
+                paramStrings.push_back(tokens[index++].toString());
+                if (tokens[index++].toString() != "\"") {
+                    error("Unclosed '\"' charactor.");
+                }
+            } else {
+                if (tokens[index].getType() == Number) {
+                    fmtTable[paramIndex[i]] = str;
+                    paramStrings.push_back(QString::number(tokens[index++].getNumber()));
+                } else {
+                    fmtTable[paramIndex[i]] = var;
+                    paramNames.push_back(tokens[index++].toString().trimmed());
+                }
+            }
+        }
+        paramNumber = paramNames.size();
+    }
+}
+
+PrintfStatement::~PrintfStatement() {}
+
+StatementType PrintfStatement::getType() {
+    return PrintfStmt;
+}
+
+StatementTree *PrintfStatement::getTree() {
+    SyntaxTree **childs = new SyntaxTree*[1];
+    SyntaxTree *t = new SyntaxTree("incompleted");
+    childs[0] = t;
+    return new StatementTree("PRINT", childs, 1);
+}
+
+int PrintfStatement::execute(EvaluationContext &context) {
+    QString output = "";
+    int varIndex = 0, strIndex = 0, fmtIndex = 0;
+    for (fmtType t : fmtTable) {
+        if (t == var) {
+            QString name = paramNames[varIndex++];
+            if (context.isDefinedInt(name)) {
+                output += QString::number(context.getValue(name));
+                continue;
+            }
+            if (context.isDefinedString(name)) {
+                output += context.getValue(name);
+                continue;
+            }
+            error(("Param " + name + " is undefined.").toStdString());
+        } else if (t == str) {
+            output += paramStrings[strIndex++];
+        } else if (t == fmt) {
+            output += format[fmtIndex++];
+        }
+    }
+    res_display->insertPlainText(output + '\n');
+    return 0;
+}
+
+QString PrintfStatement::toString() {
+    QString _text = "PRINTF ";
+    for (Token cur_token : getTokens) {
+        _text += cur_token.toString() + " ";
+    }
+    return _text.trimmed();
+}
+
 InputStatement::InputStatement(QVector<Token> tks) {
     if (tks.length() == 1 && tks[0].getType() == String &&
             tks[0].getWordType() == Variable) {

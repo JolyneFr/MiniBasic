@@ -1,7 +1,7 @@
 #include "tokenizer.h"
 #include <QtDebug>
 
-static QString matchStr[15] = {"REM", "LET", "PRINT", "INPUT", "INPUTS", "GOTO", "IF", "END", "THEN",
+static QString matchStr[16] = {"REM", "LET", "PRINT", "PRINTF", "INPUT", "INPUTS", "GOTO", "IF", "END", "THEN",
                        "RUN", "LOAD", "LIST", "CLEAR", "HELP", "QUIT"};
 
 Token::Token(QString ts, TokenType tt): tokenString(ts), tType(tt) {
@@ -81,7 +81,7 @@ QVector<Token> getTokens(std::string cur_str) {
             }
 
             if (cur_token[0] == '<' || cur_token[0] == '>' || cur_token[0] == '=' || cur_token[0] == '(' ||
-                cur_token[0] == ')' || cur_token[0] == '+' ||
+                cur_token[0] == ')' || cur_token[0] == '+' || cur_token[0] == ',' ||
                     (cur_token[0] == '-' && (index > 0 && (tokens.back().getType() != Mark && ((tokens.back().getType() == String) == (tokens.back().getWordType() == Variable))))) ||
                     cur_token[0] == '/' ) {
                 tokens.append(Token(cur_token, Mark));

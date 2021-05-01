@@ -175,6 +175,9 @@ Statement *ProgramRunner::parse(QVector<Token> tokens) {
         case PRINT: {
             return new PrintStatement(tokens, res_display); break;
         }
+        case PRINTF: {
+            return new PrintfStatement(tokens, res_display); break;
+        }
         case INPUT: {
             return new InputStatement(tokens); break;
         }
