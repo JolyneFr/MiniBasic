@@ -155,22 +155,22 @@ private:
 
 };
 
-class StringIdentifierExp: public Expression {
+//class StringIdentifierExp: public Expression {
 
-public:
+//public:
 
-    StringIdentifierExp(QString _name);
-    virtual ~StringIdentifierExp();
+//    StringIdentifierExp(QString _name);
+//    virtual ~StringIdentifierExp();
 
-    virtual ExpressionType type();
-    virtual QString toString();
-    virtual QString evalString(EvaluationContext & context);
-    virtual SyntaxTree *getSyntaxTree();
+//    virtual ExpressionType type();
+//    virtual QString toString();
+//    virtual QString evalString(EvaluationContext & context);
+//    virtual SyntaxTree *getSyntaxTree();
 
-private:
+//private:
 
-    QString name;
-};
+//    QString name;
+//};
 
 class StringExp: public Expression {
 

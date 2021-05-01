@@ -150,28 +150,28 @@ SyntaxTree *CompoundExp::getSyntaxTree() {
     return new SyntaxTree(op, l, r);
 }
 
-StringIdentifierExp::StringIdentifierExp(QString _name): name(_name) {}
+//StringIdentifierExp::StringIdentifierExp(QString _name): name(_name) {}
 
-StringIdentifierExp::~StringIdentifierExp() {}
+//StringIdentifierExp::~StringIdentifierExp() {}
 
-ExpressionType StringIdentifierExp::type() {
-    return STRINGIDENTIFIER;
-}
+//ExpressionType StringIdentifierExp::type() {
+//    return STRINGIDENTIFIER;
+//}
 
-QString StringIdentifierExp::toString() {
-    return name;
-}
+//QString StringIdentifierExp::toString() {
+//    return name;
+//}
 
-QString StringIdentifierExp::evalString(EvaluationContext &context) {
-    if (!context.isDefinedString(name)) {
-        error(name.toStdString() + " is undefined.");
-    }
-    return context.getString(name);
-}
+//QString StringIdentifierExp::evalString(EvaluationContext &context) {
+//    if (!context.isDefinedString(name)) {
+//        error(name.toStdString() + " is undefined.");
+//    }
+//    return context.getString(name);
+//}
 
-SyntaxTree *StringIdentifierExp::getSyntaxTree() {
-    return new SyntaxTree(name);
-}
+//SyntaxTree *StringIdentifierExp::getSyntaxTree() {
+//    return new SyntaxTree(name);
+//}
 
 StringExp::StringExp(QString _value): value(_value) {}
 

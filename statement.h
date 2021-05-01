@@ -92,10 +92,10 @@ public:
 class PrintfStatement: public Statement {
 private:
 
-    enum fmtType { var, str, fmt };
+    enum fmtType { exp, str, fmt };
     QTextBrowser* res_display;
     int paramNumber;
-    QVector<QString> paramNames;
+    QVector<Expression*> paramExps;
     QVector<QString> paramStrings;
     QVector<QString> format;
     QVector<fmtType> fmtTable;
@@ -106,6 +106,7 @@ public:
     virtual int execute(EvaluationContext &programContext);
     virtual QString toString();
     virtual StatementTree *getTree();
+    QString getRootString();
 };
 
 class InputStatement: public Statement {
