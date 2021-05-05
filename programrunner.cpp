@@ -109,6 +109,7 @@ void ProgramRunner::parseStatement(int lineNumber, QVector<Token> tokens) {
         error_display->setText("PARSE ERROR: " + QString::fromStdString(msg) +
                                "at line " + QString::number(lineNumber));
         (*programContainer)[lineNumber] = new ErrorStatement(QString::fromStdString(msg));
+        sync_display();
         return;
     }
 }
@@ -202,10 +203,17 @@ void ProgramRunner::sync_display() {
     global_display->clear();
     QMap<int, QString>::Iterator cur_code = programBuffer->begin();
     while (cur_code != programBuffer->end()) {
-        code_display->insertPlainText(QString::number(cur_code.key()) + " " +
-                                      cur_code.value() + "\n");
+        QString text = QString::number(cur_code.key()) + " " + cur_code.value();
+        if (programContainer->count(cur_code.key()) &&
+                (*programContainer)[cur_code.key()]->getType() == ErrorStmt) {
+            text = "<p style=\"background:red;color:#ffffff;line-height:0.59\">" + text + "</p>";
+        } else {
+            text = "<p style=\"color:#000000;line-height:0.59\">" + text + "</p>";
+        }
+        code_display->append(text);
         cur_code++;
     }
+
     QMap<QString, QString>::ConstIterator cur_string = programContext.getStringTable().cbegin();
     while (cur_string != programContext.getStringTable().cend()) {
         global_display->insertPlainText(cur_string.key() + ": STR = " +
