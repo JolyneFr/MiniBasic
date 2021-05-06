@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->action_save, &QAction::triggered, this, &MainWindow::click_save_file);
     connect(ui->action_load, &QAction::triggered, this, &MainWindow::click_load_file);
     connect(ui->help_button, &QPushButton::clicked, this, &MainWindow::click_help);
+    connect(ui->debug_button, &QPushButton::clicked, this, &MainWindow::click_debug);
     cur_prog = new Program();
     prog_runner.setDisplay(ui->code_display, ui->result_display, ui->ss_display, ui->error_label, ui->gc_display);
     ui->action_save->setDisabled(true);
@@ -38,8 +39,15 @@ void MainWindow::press_enter()
 
 void MainWindow::click_run()
 {
-    prog_runner.readStatement("RUN");
-    lineIndex++;
+    RunningMode mode = prog_runner.get_mode();
+    if (mode == Normal) {
+        prog_runner.readStatement("RUN");
+        lineIndex++;
+    } else {
+        prog_runner.step_end();
+        ui->load_button->setEnabled(true);
+        ui->clear_button->setEnabled(true);
+    }
 }
 
 void MainWindow::click_help()
@@ -107,6 +115,21 @@ void MainWindow::display_code_from_file(const std::string &filename)
     }
     this_file.close();
     ui->code_display->insertPlainText("\n");
+}
+
+void MainWindow::click_debug() {
+    RunningMode mode = prog_runner.get_mode();
+    if (mode == Normal) {
+        prog_runner.start_debug();
+        ui->load_button->setEnabled(false);
+        ui->clear_button->setEnabled(false);
+    } else {
+        prog_runner.step_next();
+    }
+    if (prog_runner.get_mode() == Normal) {
+        ui->load_button->setEnabled(true);
+        ui->clear_button->setEnabled(true);
+    }
 }
 
 void MainWindow::sync_code_display()

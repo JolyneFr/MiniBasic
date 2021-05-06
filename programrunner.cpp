@@ -1,5 +1,6 @@
 #include "programrunner.h"
 #include <QInputDialog>
+#include <QMessageBox>
 #include <fstream>
 #include <QtDebug>
 
@@ -7,6 +8,8 @@
 ProgramRunner::ProgramRunner() {
     programContainer = new QMap<int, Statement*>();
     programBuffer = new QMap<int, QString>();
+    mode = Normal;
+    debug_itr = programContainer->end();
 }
 
 ProgramRunner::~ProgramRunner() {
@@ -42,6 +45,92 @@ void ProgramRunner::clear() {
     syntax_display->clear();
     res_display->clear();
     sync_display();
+}
+
+void ProgramRunner::start_debug() {
+    mode = Debug;
+
+    syntax_display->clear();
+    res_display->clear();
+    parse_codes();
+    debug_itr = programContainer->begin();
+
+    if (debug_itr == programContainer->end()) {
+        end_debug(true);
+        sync_display();
+    } else {
+        show_single_syntax();
+    }
+
+}
+
+void ProgramRunner::show_single_syntax() {
+    int cur_key = debug_itr.key();
+    Statement* cur_stmt = debug_itr.value();
+    StatementTree* cur_tree = cur_stmt->getTree();
+    QString syntax_str = cur_tree->getSyntaxStr(cur_key);
+
+    syntax_display->clear();
+    syntax_display->insertPlainText(syntax_str);
+    sync_display();
+}
+
+void ProgramRunner::step_next() {
+
+    try {
+        int status = debug_itr.value()->execute(programContext);
+        sync_display();
+        switch (status) {
+            case -2: {
+                end_debug(true);
+                sync_display();
+            }
+            case -1: return; // parse error. keep the error message
+            case 0:  debug_itr++ ;break;
+            default: {
+                debug_itr = programContainer->find(status);
+                if (debug_itr == programContainer->end()) {
+                    error("Target LineNumber doesn't exist.");
+                    return;
+                }
+            }
+        }
+    }  catch (std::string msg) {
+        error_display->setText("RUNTIME ERROR: " + QString::fromStdString(msg));
+        end_debug(false);
+        sync_display();
+        return;
+    }
+
+    if (debug_itr == programContainer->end()) {
+        end_debug(true);
+        sync_display();
+    } else {
+        show_single_syntax();
+    }
+
+}
+
+void ProgramRunner::end_debug(bool is_success) {
+    mode = Normal;
+    debug_itr = programContainer->end();
+    if (is_success) {
+        QMessageBox::information(NULL, "Debug Ends", "Program Ends Successfully!",
+                                 QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    } else {
+        QMessageBox::information(NULL, "Debug Ends", "Program Terminated with Runtime Error",
+                                 QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    }
+}
+
+void ProgramRunner::step_end() {
+    while (mode == Debug) {
+        step_next();
+    }
+}
+
+RunningMode ProgramRunner::get_mode() {
+    return mode;
 }
 
 void ProgramRunner::readStatement(QString line) {
@@ -130,7 +219,6 @@ void ProgramRunner::run_codes() {
     syntax_display->clear();
     res_display->clear();
     // display the syntax tree first
-
     while (cur_code != programContainer->end()) {
         Statement* curStmt = cur_code.value();
         int lineNumber = cur_code.key();
@@ -201,14 +289,21 @@ Statement *ProgramRunner::parse(QVector<Token> tokens) {
 void ProgramRunner::sync_display() {
     code_display->clear();
     global_display->clear();
+    if (mode == Debug) {
+        code_display->append("<p style=\"background:white;line-height:0.59\">----------------Debug Mode----------------</p>");
+    } else {
+        code_display->append("<p style=\"background:white;line-height:0.59\">----------------Normal Mode----------------</p>");
+    }
     QMap<int, QString>::Iterator cur_code = programBuffer->begin();
     while (cur_code != programBuffer->end()) {
         QString text = QString::number(cur_code.key()) + " " + cur_code.value();
         if (programContainer->count(cur_code.key()) &&
                 (*programContainer)[cur_code.key()]->getType() == ErrorStmt) {
             text = "<p style=\"background:red;color:#ffffff;line-height:0.59\">" + text + "</p>";
-        } else {
-            text = "<p style=\"color:#000000;line-height:0.59\">" + text + "</p>";
+        } else if (mode == Debug && programBuffer->count(debug_itr.key()) && cur_code.key() == debug_itr.key()) {
+            text = "<p style=\"background:green;color:#ffffff;line-height:0.59\">" + text + "</p>";
+        } else{
+            text = "<p style=\"background:white;color:#000000;line-height:0.59\">" + text + "</p>";
         }
         code_display->append(text);
         cur_code++;

@@ -40,5 +40,6 @@ private slots:
     void click_clear();
     void click_save_file();
     void click_load_file();
+    void click_debug();
 };
 #endif // MAINWINDOW_H
