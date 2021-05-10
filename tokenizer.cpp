@@ -57,24 +57,34 @@ QVector<Token> getTokens(std::string cur_str) {
                 cur_token.clear();
 
                 while (cur_str[index] != '"' && cur_str[index] != '\0') {
-                    if (cur_str[index] != '{' && cur_str[index] != '}') {
-                        cur_token.append(qcur_str[index]);
-                        index++;
-                    } else {
-                        if (cur_str[index] == '{') {
-                            if (cur_str[index + 1] != '}') {
-                                throw "Single '{' or '}' is not allowed.";
-                            }
-                            tokens.append(Token(cur_token, String));
-                            cur_token.clear();
-                            tokens.append(Token("{}", String));
-                            index += 2;
-                        } else throw "Single '{' or '}' is not allowed.";
-                    }
+                    cur_token.append(qcur_str[index]);
+                    index++;
                 }
-                if (cur_str[index] == '\0') throw "Unclosed \" is illegal";
+                if (cur_str[index] == '\0') {
+                    tokens.append(Token(cur_token, String));
+                    break;
+                }
                 tokens.append(Token(cur_token, String));
                 tokens.append(Token("\"", Mark));
+                cur_token.clear();
+                index++;
+                continue;
+            }
+
+            if (cur_token[0] == '\'') {
+                tokens.append(Token(cur_token, Mark));
+                cur_token.clear();
+
+                while (cur_str[index] != '\'' && cur_str[index] != '\0') {
+                    cur_token.append(qcur_str[index]);
+                    index++;
+                }
+                if (cur_str[index] == '\0') {
+                    tokens.append(Token(cur_token, String));
+                    break;
+                }
+                tokens.append(Token(cur_token, String));
+                tokens.append(Token("'", Mark));
                 cur_token.clear();
                 index++;
                 continue;
@@ -129,6 +139,30 @@ QVector<Token> getTokens(std::string cur_str) {
             index++;
         }
         cur_token.clear();
+    }
+    return tokens;
+}
+
+QVector<Token> parse_format(QString fmt) {
+    QVector<Token> tokens;
+    QString cur_token;
+    int index = 0;
+    while (fmt[index] != '\0') {
+        if (fmt[index] != '{' && fmt[index] != '}') {
+            cur_token.append(fmt[index]);
+            index++;
+        } else if (fmt[index] == '{') {
+            if (index >= fmt.size() - 1 || fmt[index + 1] != '}') {
+                throw "Single '{' or '}' is not allowed.";
+            }
+            tokens.append(Token(cur_token, String));
+            cur_token.clear();
+            tokens.append(Token("{}", String));
+            index += 2;
+        } else throw "Single '{' or '}' is not allowed.";
+    }
+    if (cur_token.size() != 0) {
+        tokens.append(Token(cur_token, String));
     }
     return tokens;
 }

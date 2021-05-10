@@ -171,9 +171,13 @@ LetStatement::LetStatement(QVector<Token> tks) {
     tks.pop_front();
     tks.pop_front();
     if (tks[0].toString() == "\"") {
-      if (tks.size() != 3 || tks[2].toString() != "\"")
-          throw "Illegal format of string!";
-      rightExp = new StringExp(tks[1].toString());
+        if (tks.size() != 3 || tks[2].toString() != "\"")
+            error("Illegal format of string!");
+        rightExp = new StringExp(tks[1].toString());
+    } else if (tks[0].toString() == "'") {
+        if (tks.size() != 3 || tks[2].toString() != "'")
+            error("Illegal format of string!");
+        rightExp = new StringExp(tks[1].toString());
     } else rightExp = getExp(tks);
 }
 
@@ -235,38 +239,48 @@ StatementTree *PrintStatement::getTree() {
 }
 
 PrintfStatement::PrintfStatement(QVector<Token> tokens, QTextBrowser* rd): res_display(rd) {
+    if (tokens.empty())
+        error("empty statement is not supported!");
     getTokens = tokens;
-    QVector<int> paramIndex;
     paramNumber = 0;
+    int index;
+    fmtString = "";
     if (tokens[0].toString() == "\"") {
-        // get paramNumber and format
-        int index = 1;
-        while (tokens[index].toString() != "\"") {
-            if (tokens[index].toString() == "{}") {
-                fmtTable.push_back(str);
-                paramNumber++;
-                paramIndex.push_back(fmtTable.size() - 1);
-            } else {
-                fmtTable.push_back(fmt);
-                format.push_back(tokens[index].toString());
-            }
-            index++;
+        if (tokens.size() < 3 || tokens[2].toString() != "\"") {
+            error("wrong format!");
         }
-        index++;
-        for (int i = 0; i < paramNumber; i++) {
-            if (tokens[index++].toString() != ",") {
-                error("There should be ',' before each param.");
-            }
+        fmtString = "\"" + tokens[1].toString() + "\"";
+        index = 3;
+    } else if (tokens[0].toString() == "'") {
+        if (tokens.size() < 3 || tokens[2].toString() != "'") {
+            error("wrong format!");
+        }
+        fmtString = "'" + tokens[1].toString() + "'";
+        index = 3;
+    } else if (tokens[0].getType() == String && tokens[0].getWordType() == Variable) {
+        fmtString = tokens[0].toString();
+        index = 1;
+    } else {
+        error("wrong format!");
+        index = 0;
+    }
 
+    paramNumber = 0;
+    while (index < tokens.size()) {
+        if (tokens[index++].toString() == ",") {
+            if (index >= tokens.size())
+                error("wrong format");
             if (tokens[index].toString() == "\"") {
                 index++;
-                fmtTable[paramIndex[i]] = str;
+                fmtTable.append(str);
+                if (index >= tokens.size())
+                    error("wrong format");
                 paramStrings.push_back(tokens[index++].toString());
-                if (tokens[index++].toString() != "\"") {
+                if (index >= tokens.size() || tokens[index++].toString() != "\"") {
                     error("Unclosed '\"' charactor.");
                 }
             } else {
-                fmtTable[paramIndex[i]] = exp;
+                fmtTable.append(exp);
                 QVector<Token> exp_tokens;
                 while (index < tokens.size() && tokens[index].toString() != ",") {
                     exp_tokens.append(tokens[index]);
@@ -274,8 +288,10 @@ PrintfStatement::PrintfStatement(QVector<Token> tokens, QTextBrowser* rd): res_d
                 }
                 paramExps.append(getExp(exp_tokens));
             }
+            paramNumber++;
+        } else {
+            error("There should be ',' before each param.");
         }
-        paramNumber = paramExps.size();
     }
 }
 
@@ -286,16 +302,7 @@ StatementType PrintfStatement::getType() {
 }
 
 QString PrintfStatement::getRootString() {
-    QString output = "\"";
-    int fmtIndex = 0;
-    for (fmtType t : fmtTable) {
-        if (t != fmt) {
-            output += "{}";
-        } else {
-            output += format[fmtIndex++];
-        }
-    }
-    return output + "\"";
+    return fmtString;
 }
 
 StatementTree *PrintfStatement::getTree() {
@@ -317,32 +324,54 @@ StatementTree *PrintfStatement::getTree() {
 }
 
 int PrintfStatement::execute(EvaluationContext &context) {
+
+    QString format;
+    if (fmtString[0] == '"' || fmtString[0] == '\'') {
+        format = fmtString.mid(1, fmtString.size() - 2);
+    } else {
+        format = context.getString(fmtString);
+    }
+
+    QVector<Token> fmt_tokens = parse_format(format);
+    int tmp_param_number = 0, i = 0;
+    while (i < fmt_tokens.size()) {
+        if (fmt_tokens[i].toString() == "{}") {
+            tmp_param_number++;
+        }
+        i++;
+    }
+    if (tmp_param_number != paramNumber)
+        error("The number of parameters does not match ");
+
     QString output = "";
     int varIndex = 0, strIndex = 0, fmtIndex = 0;
-    for (fmtType t : fmtTable) {
-        if (t == exp) {
-            Expression *cur_exp = paramExps[varIndex++];
-            if (cur_exp->type() != IDENTIFIER) {
-                output.append(QString::number(cur_exp->eval(context)));
-            } else {
-                QString name = cur_exp->getIdentifierName();
-                if (context.isDefinedInt(name)) {
-                    output += QString::number(context.getValue(name));
-                    continue;
+    for (Token t : fmt_tokens) {
+        if (t.toString() == "{}") {
+            fmtType cur_fmt = fmtTable[fmtIndex++];
+            if (cur_fmt == exp) {
+                Expression *cur_exp = paramExps[varIndex++];
+                if (cur_exp->type() != IDENTIFIER) {
+                    output.append(QString::number(cur_exp->eval(context)));
+                } else {
+                    QString name = cur_exp->getIdentifierName();
+                    if (context.isDefinedInt(name)) {
+                        output += QString::number(context.getValue(name));
+                        continue;
+                    }
+                    if (context.isDefinedString(name)) {
+                        output += context.getValue(name);
+                        continue;
+                    }
+                    error(("Param " + name + " is undefined.").toStdString());
                 }
-                if (context.isDefinedString(name)) {
-                    output += context.getValue(name);
-                    continue;
-                }
-                error(("Param " + name + " is undefined.").toStdString());
+            } else {// str
+                output += paramStrings[strIndex++];
             }
-
-        } else if (t == str) {
-            output += paramStrings[strIndex++];
-        } else if (t == fmt) {
-            output += format[fmtIndex++];
+        } else {
+            output += t.toString();
         }
     }
+
     res_display->insertPlainText(output + '\n');
     return 0;
 }

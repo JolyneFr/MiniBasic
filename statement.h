@@ -95,6 +95,7 @@ private:
     enum fmtType { exp, str, fmt };
     QTextBrowser* res_display;
     int paramNumber;
+    QString fmtString;
     QVector<Expression*> paramExps;
     QVector<QString> paramStrings;
     QVector<QString> format;

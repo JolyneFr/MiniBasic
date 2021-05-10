@@ -26,4 +26,6 @@ public:
 
 QVector<Token> getTokens(std::string str);
 
+QVector<Token> parse_format(QString fmt);
+
 #endif // TOKENIZER_H

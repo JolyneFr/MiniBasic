@@ -11,7 +11,7 @@ void EvaluationContext::setValue(QString var, QString value) {
 int EvaluationContext::getValue(QString var) {
     QMap<QString, int>::iterator find_itr = symbolTable.find(var);
     if (find_itr == symbolTable.end()) {
-        throw (var + " is undefined");
+        throw (var + " is undefined").toStdString();
     }
     return find_itr.value();
 }
@@ -19,7 +19,7 @@ int EvaluationContext::getValue(QString var) {
 QString EvaluationContext::getString(QString var) {
     auto find_itr = stringTable.find(var);
     if (find_itr == stringTable.end()) {
-        throw (var + " is undefined");
+        throw (var + " is undefined").toStdString();
     }
     return find_itr.value();
 }

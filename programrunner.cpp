@@ -53,6 +53,8 @@ void ProgramRunner::start_debug() {
     syntax_display->clear();
     res_display->clear();
     parse_codes();
+
+
     debug_itr = programContainer->begin();
 
     if (debug_itr == programContainer->end()) {
@@ -183,7 +185,6 @@ void ProgramRunner::readStatement(QString line) {
 }
 
 void ProgramRunner::parseStatement(int lineNumber, QVector<Token> tokens) {
-    try {
     if (lineNumber <= 0)
         error("LineNumber must be greater than 0.");
     if (tokens.empty()) {
@@ -194,22 +195,23 @@ void ProgramRunner::parseStatement(int lineNumber, QVector<Token> tokens) {
            error("Type of statement doesn't exist.");
         (*programContainer)[lineNumber] = curStmt;
     }
-    } catch (std::string msg) {
-        error_display->setText("PARSE ERROR: " + QString::fromStdString(msg) +
-                               "at line " + QString::number(lineNumber));
-        (*programContainer)[lineNumber] = new ErrorStatement(QString::fromStdString(msg));
-        sync_display();
-        return;
-    }
 }
 
 void ProgramRunner::parse_codes() {
     programContainer->clear();
     QMap<int, QString>::Iterator cur_code = programBuffer->begin();
     while (cur_code != programBuffer->end()) {
+        try {
         QVector<Token> tokens = getTokens(cur_code.value().toStdString());
         parseStatement(cur_code.key(), tokens);
         cur_code++;
+        } catch (std::string msg) {
+            error_display->setText("PARSE ERROR: " + QString::fromStdString(msg) +
+                                   "at line " + QString::number(cur_code.key()));
+            (*programContainer)[cur_code.key()] = new ErrorStatement(QString::fromStdString(msg));
+            sync_display();
+            return;
+        }
     }
 }
 
@@ -290,20 +292,20 @@ void ProgramRunner::sync_display() {
     code_display->clear();
     global_display->clear();
     if (mode == Debug) {
-        code_display->append("<p style=\"background:white;line-height:0.59\">----------------Debug Mode----------------</p>");
+        code_display->append("<p style=\"background:white;margin:0\">----------------Debug Mode----------------</p>");
     } else {
-        code_display->append("<p style=\"background:white;line-height:0.59\">----------------Normal Mode----------------</p>");
+        code_display->append("<p style=\"background:white;margin:0\">----------------Normal Mode----------------</p>");
     }
     QMap<int, QString>::Iterator cur_code = programBuffer->begin();
     while (cur_code != programBuffer->end()) {
         QString text = QString::number(cur_code.key()) + " " + cur_code.value();
         if (programContainer->count(cur_code.key()) &&
                 (*programContainer)[cur_code.key()]->getType() == ErrorStmt) {
-            text = "<p style=\"background:red;color:#ffffff;line-height:0.59\">" + text + "</p>";
+            text = "<p style=\"background:red;color:#ffffff;margin:0\">" + text + "</p>";
         } else if (mode == Debug && programBuffer->count(debug_itr.key()) && cur_code.key() == debug_itr.key()) {
-            text = "<p style=\"background:green;color:#ffffff;line-height:0.59\">" + text + "</p>";
+            text = "<p style=\"background:green;color:#ffffff;margin:0\">" + text + "</p>";
         } else{
-            text = "<p style=\"background:white;color:#000000;line-height:0.59\">" + text + "</p>";
+            text = "<p style=\"background:white;color:#000000;margin:0\">" + text + "</p>";
         }
         code_display->append(text);
         cur_code++;
