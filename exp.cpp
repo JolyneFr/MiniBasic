@@ -183,7 +183,7 @@ ExpressionType StringExp::type() {
 }
 
 QString StringExp::toString() {
-    return "\"" + value + "\"";
+    return value;
 }
 
 SyntaxTree *StringExp::getSyntaxTree() {

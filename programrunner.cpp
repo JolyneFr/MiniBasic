@@ -303,6 +303,7 @@ void ProgramRunner::sync_display() {
     QMap<int, QString>::Iterator cur_code = programBuffer->begin();
     while (cur_code != programBuffer->end()) {
         QString text = QString::number(cur_code.key()) + " " + cur_code.value();
+        text = text.replace("<", "&lt;");
         if (programContainer->count(cur_code.key()) &&
                 (*programContainer)[cur_code.key()]->getType() == ErrorStmt) {
             text = "<p style=\"background:red;color:#ffffff;margin:0\">" + text + "</p>";

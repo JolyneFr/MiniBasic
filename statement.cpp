@@ -368,7 +368,7 @@ int PrintfStatement::execute(EvaluationContext &context) {
                         continue;
                     }
                     if (context.isDefinedString(name)) {
-                        output += context.getValue(name);
+                        output += context.getString(name);
                         continue;
                     }
                     error(("Param " + name + " is undefined.").toStdString());
