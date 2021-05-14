@@ -279,6 +279,15 @@ PrintfStatement::PrintfStatement(QVector<Token> tokens, QTextBrowser* rd): res_d
                 if (index >= tokens.size() || tokens[index++].toString() != "\"") {
                     error("Unclosed '\"' charactor.");
                 }
+            } else if (tokens[index].toString() == "'") {
+                index++;
+                fmtTable.append(str);
+                if (index >= tokens.size())
+                    error("wrong format");
+                paramStrings.push_back(tokens[index++].toString());
+                if (index >= tokens.size() || tokens[index++].toString() != "'") {
+                    error("Unclosed ''' charactor.");
+                }
             } else {
                 fmtTable.append(exp);
                 QVector<Token> exp_tokens;

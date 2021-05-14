@@ -98,6 +98,7 @@ void ProgramRunner::step_next() {
             }
         }
     }  catch (std::string msg) {
+        (*programContainer)[debug_itr.key()] = new ErrorStatement("RUNTIME ERROR");
         error_display->setText("RUNTIME ERROR: " + QString::fromStdString(msg));
         end_debug(false);
         sync_display();
@@ -148,6 +149,7 @@ void ProgramRunner::readStatement(QString line) {
         } else {
             programBuffer->insert(begin.getNumber(), line);
         }
+        programContainer->clear();
         sync_display();
     } else if (begin.getType() == String) {
         StringType cur_t = begin.getWordType();
@@ -248,7 +250,9 @@ void ProgramRunner::run_codes() {
         }
     }
     } catch (std::string msg) {
+        (*programContainer)[cur_code.key()] = new ErrorStatement("RUNTIME ERROR");
         error_display->setText("RUNTIME ERROR: " + QString::fromStdString(msg));
+        sync_display();
         return;
     }
 }
@@ -323,6 +327,8 @@ void ProgramRunner::sync_display() {
                                         QString::number(cur_variable.value()) + "\n");
         cur_variable++;
     }
+
+    code_display->setTabStopDistance(0);
 
 }
 

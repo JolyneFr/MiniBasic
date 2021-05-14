@@ -153,13 +153,13 @@ QVector<Token> parse_format(QString fmt) {
             index++;
         } else if (fmt[index] == '{') {
             if (index >= fmt.size() - 1 || fmt[index + 1] != '}') {
-                throw "Single '{' or '}' is not allowed.";
+                throw std::string("Single '{' or '}' is not allowed.");
             }
             tokens.append(Token(cur_token, String));
             cur_token.clear();
             tokens.append(Token("{}", String));
             index += 2;
-        } else throw "Single '{' or '}' is not allowed.";
+        } else throw std::string("Single '{' or '}' is not allowed.");
     }
     if (cur_token.size() != 0) {
         tokens.append(Token(cur_token, String));
