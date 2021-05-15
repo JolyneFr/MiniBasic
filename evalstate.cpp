@@ -2,10 +2,16 @@
 
 void EvaluationContext::setValue(QString var, int value) {
     symbolTable[var] = value;
+    if (stringTable.count(var)) {
+        stringTable.remove(var);
+    }
 }
 
 void EvaluationContext::setValue(QString var, QString value) {
     stringTable[var] = value;
+    if (symbolTable.count(var)) {
+        symbolTable.remove(var);
+    }
 }
 
 int EvaluationContext::getValue(QString var) {
@@ -34,6 +40,7 @@ bool EvaluationContext::isDefinedString(QString var) {
 
 void EvaluationContext::clear() {
     symbolTable.clear();
+    stringTable.clear();
 }
 
 QMap<QString, int> EvaluationContext::getTable() const { return symbolTable; }
